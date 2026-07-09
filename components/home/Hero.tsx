@@ -44,8 +44,8 @@ export function Hero() {
       </div>
       <div className="relative mx-auto max-w-4xl px-5 text-center">
         <div className="mb-8 flex items-center justify-center gap-6">
-          <span data-hero-rule className="h-px w-24 bg-gold/60 sm:w-40" />
-          <span data-hero-rule className="h-px w-24 bg-gold/60 sm:w-40" />
+          <span data-hero-rule aria-hidden className="h-px w-24 bg-gold/60 sm:w-40" />
+          <span data-hero-rule aria-hidden className="h-px w-24 bg-gold/60 sm:w-40" />
         </div>
         <h1 data-hero-line className="font-display text-4xl font-bold uppercase tracking-wide text-gold sm:text-6xl">
           Qualifiziertes Personal

@@ -41,7 +41,7 @@ export function StatCounter({
         {value}
         {suffix}
       </span>
-      <p className="mt-2 font-body text-sm text-muted">{label}</p>
+      <p className="mt-2 font-body text-sm opacity-75">{label}</p>
     </div>
   );
 }
