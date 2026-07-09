@@ -43,7 +43,7 @@ export function ContactForm() {
   }
 
   return (
-    <form onSubmit={handleSubmit(onSubmit)} noValidate>
+    <form onSubmit={handleSubmit(onSubmit)} noValidate data-tone="dark">
       <h2 className="font-display text-2xl font-semibold text-gold">Anfrage senden</h2>
       <div className="mt-6 grid gap-5 sm:grid-cols-2">
         <Input label="Vorname" required error={errors.firstName?.message} {...register("firstName")} />

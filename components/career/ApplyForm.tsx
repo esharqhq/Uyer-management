@@ -5,7 +5,7 @@ import Link from "next/link";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
-import { applySchema, REGIONS, CV_MAX_BYTES } from "@/lib/schemas";
+import { applySchema, REGIONS, CV_MAX_BYTES, CV_TYPES } from "@/lib/schemas";
 import { Input } from "@/components/ui/Input";
 import { Select } from "@/components/ui/Select";
 import { FileUpload } from "@/components/ui/FileUpload";
@@ -19,12 +19,17 @@ const applyFormSchema = applySchema.extend({
     .refine(
       (fl) => !fl?.[0] || fl[0].size <= CV_MAX_BYTES,
       "Die Datei ist zu groß (max. 5 MB).",
+    )
+    .refine(
+      (fl) => !fl?.[0] || CV_TYPES.includes(fl[0].type),
+      "Bitte laden Sie Ihren Lebenslauf als PDF oder Word-Datei hoch.",
     ),
 });
 type ApplyFormInput = z.infer<typeof applyFormSchema>;
 
 export function ApplyForm() {
   const [status, setStatus] = useState<"idle" | "sending" | "success" | "error">("idle");
+  const [serverErrors, setServerErrors] = useState<string[]>([]);
   const {
     register,
     handleSubmit,
@@ -37,6 +42,7 @@ export function ApplyForm() {
 
   const onSubmit = async (data: ApplyFormInput) => {
     setStatus("sending");
+    setServerErrors([]);
     const fd = new FormData();
     fd.set("name", data.name);
     fd.set("phone", data.phone);
@@ -49,6 +55,8 @@ export function ApplyForm() {
       setStatus("success");
       reset();
     } else {
+      const body = await res?.json().catch(() => null);
+      setServerErrors(Array.isArray(body?.errors) ? body.errors : []);
       setStatus("error");
     }
   };
@@ -94,7 +102,9 @@ export function ApplyForm() {
       />
       {status === "error" && (
         <p role="alert" className="mt-4 font-body text-sm text-red-700">
-          Senden fehlgeschlagen. Bitte versuchen Sie es später erneut.
+          {serverErrors.length > 0
+            ? serverErrors.join(" ")
+            : "Senden fehlgeschlagen. Bitte versuchen Sie es später erneut."}
         </p>
       )}
       <Button variant="accent" type="submit" disabled={status === "sending"} className="mt-6">

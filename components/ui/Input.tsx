@@ -20,8 +20,13 @@ export function FieldLabel({
 
 export function FieldError({ error }: { error?: string }) {
   if (!error) return null;
-  // red-500 stays readable on both light (paper/surface) and dark (ink) sections
-  return <p className="mt-1 text-sm font-medium text-red-500">{error}</p>;
+  // red-700 meets WCAG AA on light sections; dark sections set data-tone="dark"
+  // on an ancestor, which switches this to red-400 for contrast on ink.
+  return (
+    <p className="mt-1 text-sm font-medium text-red-700 [[data-tone=dark]_&]:text-red-400">
+      {error}
+    </p>
+  );
 }
 
 export const fieldClasses =

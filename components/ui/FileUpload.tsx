@@ -19,7 +19,7 @@ export const FileUpload = forwardRef<HTMLInputElement, Props>(
         <label
           htmlFor={inputId}
           className={cn(
-            "block cursor-pointer rounded-lg border border-dashed px-4 py-6 text-center font-body text-sm transition",
+            "block cursor-pointer rounded-lg border border-dashed px-4 py-6 text-center font-body text-sm transition focus-within:outline-2 focus-within:outline-gold focus-within:outline-offset-2",
             selected
               ? "border-green-600 bg-green-600/10"
               : "border-line bg-surface hover:border-navy",
@@ -38,7 +38,15 @@ export const FileUpload = forwardRef<HTMLInputElement, Props>(
             </span>
           )}
         </label>
-        <input id={inputId} ref={ref} type="file" className="sr-only" accept=".pdf,.doc,.docx" {...rest} />
+        <input
+          id={inputId}
+          ref={ref}
+          type="file"
+          className="sr-only"
+          accept=".pdf,.doc,.docx"
+          aria-required={required || undefined}
+          {...rest}
+        />
         <FieldError error={error} />
       </div>
     );

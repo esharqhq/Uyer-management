@@ -7,7 +7,12 @@ function esc(s: string) {
 }
 
 export async function POST(req: Request) {
-  const fd = await req.formData();
+  let fd: FormData;
+  try {
+    fd = await req.formData();
+  } catch {
+    return NextResponse.json({ ok: false, errors: ["Ungültige Anfrage."] }, { status: 400 });
+  }
   const parsed = applySchema.safeParse({
     name: fd.get("name"),
     phone: fd.get("phone"),
