@@ -47,7 +47,7 @@ export function Header() {
         </button>
       </Container>
       {open && (
-        <nav aria-label="Mobile Navigation" className="border-t border-navy md:hidden">
+        <nav aria-label="Mobil-Navigation" className="border-t border-navy md:hidden">
           <ul className="space-y-1 px-5 py-4">
             {site.nav.map((item) => (
               <li key={item.href}>
