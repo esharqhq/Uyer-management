@@ -17,13 +17,14 @@ export function Hero() {
     () => {
       const scope = ref.current!;
       runHeroIntro(scope);
-      const mm = gsap.matchMedia();
-      mm.add("(prefers-reduced-motion: no-preference)", () => {
-        gsap.to(scope.querySelector("[data-hero-bg]"), {
-          yPercent: 12,
-          ease: "none",
-          scrollTrigger: { trigger: scope, start: "top top", end: "bottom top", scrub: true },
-        });
+      if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+      const bg = scope.querySelector("[data-hero-bg]");
+      // slow Ken Burns settle on load, then scroll parallax
+      gsap.fromTo(bg, { scale: 1.2 }, { scale: 1.1, duration: 7, ease: "power2.out" });
+      gsap.to(bg, {
+        yPercent: 12,
+        ease: "none",
+        scrollTrigger: { trigger: scope, start: "top top", end: "bottom top", scrub: true },
       });
     },
     { scope: ref },
@@ -31,7 +32,7 @@ export function Hero() {
 
   return (
     <section ref={ref} className="relative flex min-h-[88vh] items-center overflow-hidden bg-ink text-surface">
-      <div data-hero-bg className="absolute inset-0 scale-110">
+      <div data-hero-bg className="absolute inset-0 will-change-transform">
         <Image
           src="/images/hero-home.jpg"
           alt="Glasfassaden moderner Bürogebäude"

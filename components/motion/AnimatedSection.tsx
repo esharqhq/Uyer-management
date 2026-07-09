@@ -2,11 +2,13 @@
 
 import { useRef } from "react";
 import gsap from "gsap";
-import { ScrollTrigger } from "gsap/ScrollTrigger";
 import { useGSAP } from "@gsap/react";
 
-gsap.registerPlugin(ScrollTrigger, useGSAP);
+gsap.registerPlugin(useGSAP);
 
+/** Scroll-reveal wrapper. Uses IntersectionObserver + gsap.to instead of
+ *  ScrollTrigger: trigger positions cannot go stale, and all tweens live in
+ *  the useGSAP context so React dev double-mounts revert cleanly. */
 export function AnimatedSection({
   stagger = 0,
   className,
@@ -20,18 +22,29 @@ export function AnimatedSection({
 
   useGSAP(
     () => {
-      const mm = gsap.matchMedia();
-      mm.add("(prefers-reduced-motion: no-preference)", () => {
-        const el = ref.current!;
-        gsap.from(stagger > 0 ? Array.from(el.children) : el, {
-          opacity: 0,
-          y: 40,
-          duration: 0.8,
-          ease: "power2.out",
-          stagger,
-          scrollTrigger: { trigger: el, start: "top 80%", once: true },
-        });
-      });
+      if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+      const el = ref.current!;
+      const targets = stagger > 0 ? Array.from(el.children) : [el];
+      gsap.set(targets, { opacity: 0, y: 56 });
+      const io = new IntersectionObserver(
+        (entries) => {
+          if (entries.some((e) => e.isIntersecting)) {
+            io.disconnect();
+            gsap.to(targets, {
+              opacity: 1,
+              y: 0,
+              duration: 0.9,
+              ease: "power3.out",
+              stagger,
+              // free the transform for CSS hover effects afterwards
+              clearProps: "transform",
+            });
+          }
+        },
+        { rootMargin: "0px 0px -12% 0px" },
+      );
+      io.observe(el);
+      return () => io.disconnect();
     },
     { scope: ref },
   );

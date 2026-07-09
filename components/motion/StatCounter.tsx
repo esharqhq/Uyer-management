@@ -2,10 +2,9 @@
 
 import { useRef } from "react";
 import gsap from "gsap";
-import { ScrollTrigger } from "gsap/ScrollTrigger";
 import { useGSAP } from "@gsap/react";
 
-gsap.registerPlugin(ScrollTrigger, useGSAP);
+gsap.registerPlugin(useGSAP);
 
 export function StatCounter({
   value,
@@ -19,20 +18,28 @@ export function StatCounter({
   const ref = useRef<HTMLSpanElement>(null);
 
   useGSAP(() => {
+    /* IntersectionObserver + gsap.to — see AnimatedSection for rationale */
+    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
     const el = ref.current!;
-    const mm = gsap.matchMedia();
-    mm.add("(prefers-reduced-motion: no-preference)", () => {
-      const obj = { n: 0 };
-      gsap.to(obj, {
-        n: value,
-        duration: 0.9,
-        ease: "power1.out",
-        scrollTrigger: { trigger: el, start: "top 85%", once: true },
-        onUpdate: () => {
-          el.textContent = `${Math.round(obj.n)}${suffix}`;
-        },
-      });
-    });
+    const io = new IntersectionObserver(
+      (entries) => {
+        if (entries.some((e) => e.isIntersecting)) {
+          io.disconnect();
+          const obj = { n: 0 };
+          gsap.to(obj, {
+            n: value,
+            duration: 0.9,
+            ease: "power1.out",
+            onUpdate: () => {
+              el.textContent = `${Math.round(obj.n)}${suffix}`;
+            },
+          });
+        }
+      },
+      { rootMargin: "0px 0px -10% 0px" },
+    );
+    io.observe(el);
+    return () => io.disconnect();
   });
 
   return (

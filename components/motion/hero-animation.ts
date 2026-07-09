@@ -4,21 +4,22 @@ import gsap from "gsap";
  *  Elements are marked with data attributes:
  *  - [data-hero-rule]  horizontal decorative lines (scaleX draw)
  *  - [data-hero-line]  text lines (rise + fade, staggered)
+ *
+ *  Call inside a useGSAP context; uses a static reduced-motion check so all
+ *  tweens belong to the calling context and revert cleanly (see
+ *  AnimatedSection for rationale).
  */
 export function runHeroIntro(scope: HTMLElement) {
-  const mm = gsap.matchMedia();
-  mm.add("(prefers-reduced-motion: no-preference)", () => {
-    const tl = gsap.timeline({ defaults: { ease: "power2.out" } });
-    tl.from(scope.querySelectorAll("[data-hero-line]"), {
-      opacity: 0,
-      y: 34,
-      duration: 0.8,
-      stagger: 0.15,
-    }).from(
-      scope.querySelectorAll("[data-hero-rule]"),
-      { scaleX: 0, transformOrigin: "left center", duration: 0.9 },
-      "-=0.4",
-    );
-  });
-  return mm;
+  if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+  const tl = gsap.timeline({ defaults: { ease: "power2.out" } });
+  tl.from(scope.querySelectorAll("[data-hero-line]"), {
+    opacity: 0,
+    y: 34,
+    duration: 0.8,
+    stagger: 0.15,
+  }).from(
+    scope.querySelectorAll("[data-hero-rule]"),
+    { scaleX: 0, transformOrigin: "left center", duration: 0.9 },
+    "-=0.4",
+  );
 }

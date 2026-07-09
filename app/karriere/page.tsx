@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { CheckCircle2 } from "lucide-react";
 import { PageHero } from "@/components/shared/PageHero";
 import { Container } from "@/components/layout/Container";
 import { Section } from "@/components/layout/Section";
@@ -30,9 +31,16 @@ export default function KarrierePage() {
               Verträge und persönliche Betreuung inklusive.
             </p>
             <ul className="mt-6 space-y-3 font-body text-sm text-muted">
-              <li>✓ Geprüfte Arbeitgeber in Österreich &amp; Deutschland</li>
-              <li>✓ Rechtssichere Verträge und pünktliche Lohnverrechnung</li>
-              <li>✓ Persönliche Betreuung während des gesamten Einsatzes</li>
+              {[
+                "Geprüfte Arbeitgeber in Österreich & Deutschland",
+                "Rechtssichere Verträge und pünktliche Lohnverrechnung",
+                "Persönliche Betreuung während des gesamten Einsatzes",
+              ].map((b) => (
+                <li key={b} className="flex items-start gap-3">
+                  <CheckCircle2 size={20} strokeWidth={1.75} className="mt-0.5 shrink-0 text-gold" aria-hidden />
+                  {b}
+                </li>
+              ))}
             </ul>
           </AnimatedSection>
           <div className="rounded-lg border border-line bg-surface p-8 shadow-sm">
