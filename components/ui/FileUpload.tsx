@@ -37,16 +37,16 @@ export const FileUpload = forwardRef<HTMLInputElement, Props>(
               Lebenslauf hochladen (PDF oder Word, max. 5 MB)
             </span>
           )}
+          <input
+            id={inputId}
+            ref={ref}
+            type="file"
+            className="sr-only"
+            accept=".pdf,.doc,.docx"
+            aria-required={required || undefined}
+            {...rest}
+          />
         </label>
-        <input
-          id={inputId}
-          ref={ref}
-          type="file"
-          className="sr-only"
-          accept=".pdf,.doc,.docx"
-          aria-required={required || undefined}
-          {...rest}
-        />
         <FieldError error={error} />
       </div>
     );
