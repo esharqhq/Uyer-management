@@ -40,7 +40,7 @@ export function Advantages() {
             </div>
           ))}
         </AnimatedSection>
-        <div className="mt-16 grid grid-cols-3 gap-6 rounded-lg bg-ink px-6 py-10 text-surface">
+        <div className="mt-16 grid grid-cols-1 gap-8 rounded-lg bg-ink px-6 py-10 text-surface sm:grid-cols-3 sm:gap-6">
           <StatCounter value={2} label="Länder im Fokus" />
           <StatCounter value={5} label="Leistungsbereiche" />
           <StatCounter value={100} suffix="%" label="Prozessbetreuung" />

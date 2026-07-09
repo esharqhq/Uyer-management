@@ -37,6 +37,7 @@ export function Hero() {
           alt="Glasfassaden moderner Bürogebäude"
           fill
           priority
+          quality={65}
           className="object-cover"
           sizes="100vw"
         />
