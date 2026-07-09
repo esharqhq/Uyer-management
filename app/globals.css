@@ -1,0 +1,30 @@
+@import "tailwindcss";
+
+@theme {
+  /* brand — design.md §2 */
+  --color-ink: #0e2a47;
+  --color-navy: #14385e;
+  --color-gold: #c6a15b;
+  --color-gold-wash: #f4ecda;
+  /* neutrals & surfaces */
+  --color-paper: #f6f7f9;
+  --color-surface: #ffffff;
+  --color-line: #e4e8ee;
+  --color-text: #0f1e30;
+  --color-muted: #5b6b7d;
+  /* typography — design.md §1 */
+  --font-display: var(--font-cinzel), Georgia, serif;
+  --font-body: var(--font-poppins), system-ui, sans-serif;
+}
+
+body {
+  background: var(--color-paper);
+  color: var(--color-text);
+  font-family: var(--font-body);
+}
+
+/* Focus is always gold — design.md §5 */
+:focus-visible {
+  outline: 2px solid var(--color-gold);
+  outline-offset: 2px;
+}
