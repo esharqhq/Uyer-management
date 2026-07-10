@@ -10,8 +10,8 @@ every change against this list:
 
 ## Checklist
 
-- [ ] Fonts: Cinzel only for headings ≥ 20px (`font-display`); Poppins for
-      all body/label/button text (`font-body`). No other fonts.
+- [ ] Fonts: Playfair Display for headings (`font-display`, bold/uppercase);
+      Poppins for all body/label/button text (`font-body`). No other fonts.
 - [ ] Colors: only ink/navy/gold/gold-wash/paper/surface/line/text/muted.
 - [ ] Gold discipline: gold is the single accent — max ONE gold CTA per
       view. If two gold elements compete, one is wrong.

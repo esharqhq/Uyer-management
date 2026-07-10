@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import { Hero } from "@/components/home/Hero";
-import { IntroSplit } from "@/components/home/IntroSplit";
+import { IntroText } from "@/components/home/IntroText";
 import { ServicesGrid } from "@/components/home/ServicesGrid";
 import { Advantages } from "@/components/home/Advantages";
 import { StaffCta } from "@/components/home/StaffCta";
@@ -16,7 +16,7 @@ export default function HomePage() {
   return (
     <>
       <Hero />
-      <IntroSplit />
+      <IntroText />
       <ServicesGrid />
       <Advantages />
       <StaffCta />

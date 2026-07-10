@@ -24,7 +24,7 @@ in `app/globals.css`), GSAP + @gsap/react (ScrollTrigger), react-hook-form
 ## Hard rules
 
 1. **Read `design.md` before any UI work.** Use only its tokens — no new
-   colors, no new fonts. Cinzel only ≥ 20px; Poppins everywhere else.
+   colors, no new fonts. Playfair Display for headings; Poppins everywhere else.
 2. UI copy **German only**, Sie-form. Code/comments in English.
 3. **One gold CTA per view.** Secondary actions: primary (ink) or outline.
 4. Theme rhythm: dark (`ink`) sections = hero, contact block, CTA bands,

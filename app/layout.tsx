@@ -1,19 +1,16 @@
 import type { Metadata } from "next";
-import { Cinzel, Poppins } from "next/font/google";
+import { Montserrat } from "next/font/google";
 import "./globals.css";
 import { Header } from "@/components/layout/Header";
 import { Footer } from "@/components/layout/Footer";
 import { site } from "@/content/site";
 
-const cinzel = Cinzel({
+// Montserrat now drives both headings and body — heavier weights carry the
+// display role (see --font-display / --font-body in globals.css).
+const body = Montserrat({
   subsets: ["latin"],
-  weight: ["500", "600", "700"],
-  variable: "--font-cinzel",
-});
-const poppins = Poppins({
-  subsets: ["latin"],
-  weight: ["400", "500", "600"],
-  variable: "--font-poppins",
+  weight: ["400", "500", "600", "700"],
+  variable: "--font-montserrat",
 });
 
 export const metadata: Metadata = {
@@ -53,7 +50,7 @@ export default function RootLayout({
   };
 
   return (
-    <html lang="de" className={`${cinzel.variable} ${poppins.variable}`}>
+    <html lang="de" className={body.variable} suppressContentEditableWarning={true}>
       <body className="flex min-h-screen flex-col">
         <script
           type="application/ld+json"

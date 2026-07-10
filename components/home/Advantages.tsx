@@ -2,7 +2,6 @@ import { Clock3, ShieldCheck, Workflow, Globe, type LucideIcon } from "lucide-re
 import { Container } from "@/components/layout/Container";
 import { Section } from "@/components/layout/Section";
 import { AnimatedSection } from "@/components/motion/AnimatedSection";
-import { StatCounter } from "@/components/motion/StatCounter";
 
 const points: { icon: LucideIcon; title: string; text: string }[] = [
   {
@@ -37,24 +36,40 @@ export function Advantages() {
         <h2 id="advantages-heading" className="mt-3 text-center font-display text-3xl font-semibold">
           Partnerschaft auf Augenhöhe
         </h2>
-        <AnimatedSection stagger={0.12} className="mt-12 grid gap-8 sm:grid-cols-2">
+        {/* Real copy from the previous site */}
+        <div className="mx-auto mt-5 max-w-3xl space-y-4 text-center font-body leading-7 text-muted">
+          <p>
+            Unsere Expertise in der Personalvermittlung und Auftragsvermittlung
+            richtet sich an Unternehmen, die langfristige Lösungen suchen.
+            Besonders in der Gebäudereinigung zählt Effizienz: Personal muss
+            flexibel verfügbar, zuverlässig und qualifiziert sein. Genau hier
+            setzen wir an und übernehmen den gesamten Prozess – von der Suche
+            über die Auswahl bis hin zur administrativen Abwicklung.
+          </p>
+          <p>
+            Vertrauen Sie auf unsere europaweite Erfahrung und profitieren Sie
+            von einem starken Partner, der Ihre Sprache spricht und Ihre
+            Anforderungen versteht.
+          </p>
+        </div>
+        <AnimatedSection stagger={0.12} className="mt-14 grid gap-6 sm:grid-cols-2">
           {points.map((p) => (
-            <div key={p.title} className="flex gap-5">
-              <span className="inline-flex size-12 shrink-0 items-center justify-center rounded-lg bg-gold-wash text-navy">
-                <p.icon size={24} strokeWidth={1.75} aria-hidden />
+            <div
+              key={p.title}
+              className="group flex gap-5 rounded-2xl border border-line bg-paper p-6 transition duration-300 ease-out hover:-translate-y-1 hover:border-gold/40 hover:bg-surface hover:shadow-[0_22px_44px_-22px_rgba(14,42,71,0.28)]"
+            >
+              <span className="inline-flex size-12 shrink-0 items-center justify-center rounded-xl bg-ink text-surface shadow-sm transition duration-300 group-hover:bg-gold group-hover:text-ink">
+                <p.icon size={22} strokeWidth={1.75} aria-hidden />
               </span>
               <div>
-                <h3 className="font-body text-lg font-semibold">{p.title}</h3>
-                <p className="mt-1 font-body text-sm leading-6 text-muted">{p.text}</p>
+                <h3 className="font-display text-lg font-semibold text-ink transition-colors duration-300 group-hover:text-navy">
+                  {p.title}
+                </h3>
+                <p className="mt-2 font-body text-sm leading-6 text-muted">{p.text}</p>
               </div>
             </div>
           ))}
         </AnimatedSection>
-        <div className="mt-16 grid grid-cols-1 gap-8 rounded-lg bg-ink px-6 py-10 text-surface sm:grid-cols-3 sm:gap-6">
-          <StatCounter value={2} label="Länder im Fokus" />
-          <StatCounter value={5} label="Leistungsbereiche" />
-          <StatCounter value={100} suffix="%" label="Prozessbetreuung" />
-        </div>
       </Container>
     </Section>
   );

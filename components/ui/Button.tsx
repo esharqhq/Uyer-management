@@ -14,6 +14,8 @@ type Props = {
   variant?: Variant;
   href?: string;
   onDark?: boolean;
+  target?: string;
+  rel?: string;
   className?: string;
   children: React.ReactNode;
 } & React.ButtonHTMLAttributes<HTMLButtonElement>;
@@ -22,6 +24,8 @@ export function Button({
   variant = "primary",
   href,
   onDark,
+  target,
+  rel,
   className,
   children,
   ...rest
@@ -35,7 +39,13 @@ export function Button({
   );
   if (href) {
     return (
-      <Link href={href} data-on-dark={onDark} className={classes}>
+      <Link
+        href={href}
+        target={target}
+        rel={rel}
+        data-on-dark={onDark}
+        className={classes}
+      >
         {children}
       </Link>
     );

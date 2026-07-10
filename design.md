@@ -14,7 +14,7 @@ Two families do all the work.
 
 | Role | Font | Usage |
 |------|------|-------|
-| **Display / Headings** | **Cinzel** | Page titles, section headers, hero text. Refined Roman inscriptional serif — reads as premium and authoritative. Use sparingly and large. |
+| **Display / Headings** | **Playfair Display** | Page titles, section headers, hero text. High-contrast Didone serif — elegant, editorial, premium. Use bold (600–700), often uppercase. |
 | **Body / Small text / UI** | **Poppins** | Everything else: paragraphs, labels, buttons, inputs, captions, helper text. |
 
 **Google Fonts import**
@@ -22,11 +22,11 @@ Two families do all the work.
 ```html
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@500;600;700&family=Poppins:wght@400;500;600&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@500;600;700&family=Poppins:wght@400;500;600&display=swap" rel="stylesheet">
 ```
 
 ```css
---font-display: "Cinzel", Georgia, serif;
+--font-display: "Playfair Display", Georgia, serif;
 --font-body: "Poppins", system-ui, sans-serif;
 ```
 
@@ -34,15 +34,15 @@ Two families do all the work.
 
 | Token | Font | Size / Line | Weight | Example |
 |-------|------|-------------|--------|---------|
-| `display-xl` | Cinzel | 44 / 52 | 700 | Hero title |
-| `display-lg` | Cinzel | 32 / 40 | 600 | Page title |
-| `heading` | Cinzel | 24 / 32 | 600 | Section header |
+| `display-xl` | Playfair Display | 44 / 52 | 700 | Hero title |
+| `display-lg` | Playfair Display | 32 / 40 | 600 | Page title |
+| `heading` | Playfair Display | 24 / 32 | 600 | Section header |
 | `body` | Poppins | 16 / 24 | 400 | Paragraph |
 | `label` | Poppins | 14 / 20 | 500 | Form label |
 | `small` | Poppins | 13 / 18 | 400 | Helper / caption |
 
-> **Rule of thumb:** Cinzel only above 20px. At small sizes it loses legibility —
-> use Poppins there.
+> **Rule of thumb:** Playfair Display for headings (bold, often uppercase);
+> Poppins for body, labels, buttons, and all small text. Two fonts only.
 
 ---
 
@@ -165,7 +165,7 @@ Vor- und Nachname *
 
 Apply this system consistently — do not introduce new colors or fonts.
 
-- **Only two fonts:** Cinzel (headings ≥ 20px) and Poppins (everything else).
+- **Only two fonts:** Playfair Display (headings) and Poppins (everything else).
 - **Only one accent:** gold. One primary CTA per view; secondary actions use
   Primary (ink) or Outline (navy).
 - **Backgrounds:** `paper` for the page, `surface` for cards/inputs on top of it.
