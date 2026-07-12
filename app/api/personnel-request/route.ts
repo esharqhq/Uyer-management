@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { contactSchema } from "@/lib/schemas";
+import { personnelRequestSchema } from "@/lib/schemas";
 import { sendMail } from "@/lib/email";
 
 function esc(s: string) {
@@ -14,7 +14,7 @@ export async function POST(req: Request) {
     return NextResponse.json({ ok: false, errors: ["Ungültige Anfrage."] }, { status: 400 });
   }
 
-  const parsed = contactSchema.safeParse(data);
+  const parsed = personnelRequestSchema.safeParse(data);
   if (!parsed.success) {
     return NextResponse.json(
       { ok: false, errors: parsed.error.issues.map((i) => i.message) },
@@ -23,16 +23,25 @@ export async function POST(req: Request) {
   }
 
   const d = parsed.data;
+  const row = (label: string, value: string) =>
+    `<p><b>${label}:</b> ${esc(value || "–")}</p>`;
+
   try {
     await sendMail({
-      subject: `Kontaktanfrage von ${d.firstName} ${d.lastName}`,
+      replyTo: d.email,
+      subject: `Personalanfrage – ${d.firmenname}`,
       html: `
-        <h2>Neue Kontaktanfrage</h2>
-        <p><b>Name:</b> ${esc(d.firstName)} ${esc(d.lastName)}</p>
-        <p><b>E-Mail:</b> ${esc(d.email)}</p>
-        <p><b>Telefon:</b> ${esc(d.phone || "–")}</p>
-        <p><b>Nachricht:</b></p>
-        <p>${esc(d.message)}</p>`,
+        <h2>Neue Personalanfrage</h2>
+        ${row("Firmenname", d.firmenname)}
+        ${row("Ansprechpartner", d.ansprechpartner)}
+        ${row("E-Mail", d.email)}
+        ${row("Telefon", d.telefon)}
+        ${row("Gesuchte Position", d.position)}
+        ${row("Anzahl der Mitarbeiter", String(d.anzahl))}
+        ${row("Einsatzort", d.einsatzort)}
+        ${row("Gewünschtes Startdatum", d.startdatum ?? "")}
+        <p><b>Anmerkungen:</b></p>
+        <p>${esc(d.anmerkungen || "–")}</p>`,
     });
   } catch {
     return NextResponse.json(

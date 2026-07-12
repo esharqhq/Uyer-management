@@ -18,7 +18,7 @@ function HeroBuilding({ fit = "object-cover" }: { fit?: string }) {
       alt="Moderne Gebäudefassade in der Skyline"
       fill
       priority
-      quality={100}
+      quality={75}
       sizes="(min-width: 1024px) 45vw, 90vw"
       className={fit}
     />

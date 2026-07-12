@@ -11,15 +11,19 @@ import gsap from "gsap";
  */
 export function runHeroIntro(scope: HTMLElement) {
   if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+  const lines = scope.querySelectorAll("[data-hero-line]");
+  const rules = scope.querySelectorAll("[data-hero-rule]");
   const tl = gsap.timeline({ defaults: { ease: "power2.out" } });
-  tl.from(scope.querySelectorAll("[data-hero-line]"), {
-    opacity: 0,
-    y: 34,
-    duration: 0.8,
-    stagger: 0.15,
-  }).from(
-    scope.querySelectorAll("[data-hero-rule]"),
-    { scaleX: 0, transformOrigin: "left center", duration: 0.9 },
-    "-=0.4",
-  );
+  // Guard each selection — GSAP warns when handed an empty NodeList, and not
+  // every hero variant ships decorative rules.
+  if (lines.length) {
+    tl.from(lines, { opacity: 0, y: 34, duration: 0.8, stagger: 0.15 });
+  }
+  if (rules.length) {
+    tl.from(
+      rules,
+      { scaleX: 0, transformOrigin: "left center", duration: 0.9 },
+      "-=0.4",
+    );
+  }
 }

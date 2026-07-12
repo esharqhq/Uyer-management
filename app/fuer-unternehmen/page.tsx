@@ -1,10 +1,10 @@
 import type { Metadata } from "next";
-import { MessagesSquare, UserCheck, ClipboardCheck, type LucideIcon } from "lucide-react";
+import { MessagesSquare, UserCheck, ClipboardCheck, CheckCircle2, type LucideIcon } from "lucide-react";
 import { PageHero } from "@/components/shared/PageHero";
-import { StartCta } from "@/components/shared/StartCta";
 import { Container } from "@/components/layout/Container";
 import { Section } from "@/components/layout/Section";
 import { AnimatedSection } from "@/components/motion/AnimatedSection";
+import { RequestForm } from "@/components/company/RequestForm";
 
 export const metadata: Metadata = {
   title: "Für Unternehmen – Personal finden",
@@ -65,13 +65,13 @@ export default function FuerUnternehmenPage() {
           </AnimatedSection>
         </Container>
       </Section>
-      <Section tone="wash" aria-labelledby="why-heading">
+      <Section tone="dark" aria-labelledby="why-heading">
         <Container>
           <AnimatedSection className="mx-auto max-w-3xl text-center">
-            <h2 id="why-heading" className="font-display text-3xl font-semibold">
+            <h2 id="why-heading" className="font-display text-3xl font-semibold text-gold">
               Warum Uyer Management?
             </h2>
-            <p className="mt-5 font-body leading-7 text-text">
+            <p className="mt-5 font-body leading-7 text-">
               Die richtige Person am richtigen Arbeitsplatz – genau dafür steht
               Uyer Management. Unsere professionelle Personalvermittlung bringt
               Unternehmen und qualifizierte Arbeitskräfte aus der
@@ -81,7 +81,35 @@ export default function FuerUnternehmenPage() {
           </AnimatedSection>
         </Container>
       </Section>
-      <StartCta />
+      <Section tone="light" aria-labelledby="request-heading">
+        <Container className="grid gap-12 lg:grid-cols-[2fr_3fr]">
+          <AnimatedSection>
+            <h2 id="request-heading" className="font-display text-3xl font-semibold">
+              Lass uns gemeinsam starten!
+            </h2>
+            <p className="mt-4 font-body leading-7 text-muted">
+              Sie suchen zuverlässiges Reinigungspersonal? Schildern Sie uns Ihren
+              Bedarf – wir übernehmen Suche, Auswahl, Verträge und Lohnverrechnung,
+              damit Sie sich auf Ihr Geschäft konzentrieren können.
+            </p>
+            <ul className="mt-6 space-y-3 font-body text-sm text-muted">
+              {[
+                "Geprüfte Fachkräfte aus unserem europaweiten Netzwerk",
+                "Schnelle, passgenaue Vermittlung",
+                "Verträge & Lohnverrechnung inklusive",
+              ].map((b) => (
+                <li key={b} className="flex items-start gap-3">
+                  <CheckCircle2 size={20} strokeWidth={1.75} className="mt-0.5 shrink-0 text-gold" aria-hidden />
+                  {b}
+                </li>
+              ))}
+            </ul>
+          </AnimatedSection>
+          <div className="rounded-lg border border-line bg-surface p-8 shadow-sm">
+            <RequestForm />
+          </div>
+        </Container>
+      </Section>
     </>
   );
 }

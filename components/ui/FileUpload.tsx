@@ -6,10 +6,25 @@ type Props = {
   label: string;
   error?: string;
   fileName?: string | null;
+  /** Helper text shown before a file is picked. */
+  hint?: string;
 } & React.InputHTMLAttributes<HTMLInputElement>;
 
 export const FileUpload = forwardRef<HTMLInputElement, Props>(
-  ({ label, error, fileName, required, className, id, ...rest }, ref) => {
+  (
+    {
+      label,
+      error,
+      fileName,
+      hint = "Datei hochladen (PDF oder Word, max. 5 MB)",
+      accept = ".pdf,.doc,.docx",
+      required,
+      className,
+      id,
+      ...rest
+    },
+    ref,
+  ) => {
     const autoId = useId();
     const inputId = id ?? autoId;
     const selected = Boolean(fileName);
@@ -33,16 +48,14 @@ export const FileUpload = forwardRef<HTMLInputElement, Props>(
               </span>
             </>
           ) : (
-            <span className="text-muted">
-              Lebenslauf hochladen (PDF oder Word, max. 5 MB)
-            </span>
+            <span className="text-muted">{hint}</span>
           )}
           <input
             id={inputId}
             ref={ref}
             type="file"
             className="sr-only"
-            accept=".pdf,.doc,.docx"
+            accept={accept}
             aria-required={required || undefined}
             {...rest}
           />

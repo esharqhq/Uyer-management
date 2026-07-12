@@ -1,59 +1,65 @@
 import Link from "next/link";
-import { Phone, MessageCircle, Mail, MapPin, Clock } from "lucide-react";
+import { Phone, MessageCircle, Mail, MapPin, Clock, type LucideIcon } from "lucide-react";
 import { site } from "@/content/site";
 import { Container } from "@/components/layout/Container";
 import { Section } from "@/components/layout/Section";
-import { ContactForm } from "./ContactForm";
+import { AnimatedSection } from "@/components/motion/AnimatedSection";
+
+const methods: { icon: LucideIcon; label: string; value: string; href: string }[] = [
+  { icon: Phone, label: "Anrufen", value: site.phone, href: site.phoneHref },
+  { icon: MessageCircle, label: "WhatsApp", value: "Nachricht senden", href: site.whatsapp },
+  { icon: Mail, label: "E-Mail", value: site.email, href: `mailto:${site.email}` },
+];
 
 export function ContactBlock() {
   return (
-    <Section tone="dark">
-      <Container className="grid gap-10 lg:grid-cols-[2fr_3fr]">
-        <div className="rounded-lg bg-navy/40 p-8">
-          <h2 className="font-display text-2xl font-semibold text-gold">{site.legalName}</h2>
-          <address className="mt-4 flex items-start gap-2.5 font-body text-sm not-italic leading-6 text-surface/85">
-            <MapPin size={18} strokeWidth={1.75} className="mt-0.5 shrink-0 text-gold" aria-hidden />
-            <span>
-              {site.address.street}
-              <br />
-              {site.address.area}, {site.address.city}
-            </span>
-          </address>
-          <ul className="mt-6 space-y-3 font-body text-sm">
-            <li>
-              <a href={site.phoneHref} className="flex items-center gap-2.5 text-gold hover:underline">
-                <Phone size={18} strokeWidth={1.75} aria-hidden />
-                {site.phone}
-              </a>
-            </li>
-            <li>
-              <a href={site.whatsapp} className="flex items-center gap-2.5 text-gold hover:underline">
-                <MessageCircle size={18} strokeWidth={1.75} aria-hidden />
-                WhatsApp
-              </a>
-            </li>
-            <li>
-              <a href={`mailto:${site.email}`} className="flex items-center gap-2.5 text-gold hover:underline">
-                <Mail size={18} strokeWidth={1.75} aria-hidden />
-                {site.email}
-              </a>
-            </li>
-          </ul>
-          <h3 className="mt-8 flex items-center gap-2.5 font-body text-sm font-semibold uppercase tracking-wider text-surface">
-            <Clock size={18} strokeWidth={1.75} className="text-gold" aria-hidden />
-            Öffnungszeiten
-          </h3>
-          <p className="mt-2 flex justify-between font-body text-sm text-surface/85">
-            <span>{site.hours.days}</span>
-            <span>{site.hours.time}</span>
+    <Section tone="light" aria-labelledby="contact-heading">
+      <Container>
+        <AnimatedSection className="mx-auto max-w-2xl text-center">
+          <p className="font-body text-sm font-semibold uppercase tracking-[0.2em] text-navy">
+            Kontakt
           </p>
-          <p className="mt-8 font-body text-sm text-surface/70">
-            <Link href="/impressum" className="hover:text-gold">Impressum</Link>
-            {" | "}
-            <Link href="/datenschutz" className="hover:text-gold">Datenschutz</Link>
+          <h2 id="contact-heading" className="mt-3 font-display text-3xl font-semibold">
+            So erreichen Sie uns
+          </h2>
+          <p className="mt-4 font-body leading-7 text-muted">
+            Wir freuen uns auf Ihre Anfrage – telefonisch, per WhatsApp oder
+            E-Mail. Wir melden uns schnellstmöglich bei Ihnen zurück.
+          </p>
+        </AnimatedSection>
+
+        <AnimatedSection stagger={0.12} className="mt-12 grid gap-6 sm:grid-cols-3">
+          {methods.map((m) => (
+            <a
+              key={m.label}
+              href={m.href}
+              className="group flex flex-col items-center gap-3 rounded-lg border border-line bg-surface p-7 text-center shadow-sm transition duration-300 hover:-translate-y-1.5 hover:border-gold/50 hover:shadow-lg"
+            >
+              <span className="inline-flex size-14 items-center justify-center rounded-full bg-gold-wash text-navy transition duration-300 group-hover:bg-gold group-hover:text-ink">
+                <m.icon size={26} strokeWidth={1.75} aria-hidden />
+              </span>
+              <span className="mt-1 font-display text-lg font-semibold">{m.label}</span>
+              <span className="font-body text-sm text-muted">{m.value}</span>
+            </a>
+          ))}
+        </AnimatedSection>
+
+        <div className="mx-auto mt-10 flex max-w-2xl flex-col items-center gap-4 sm:flex-row sm:justify-center sm:gap-10">
+          <p className="flex items-center gap-2.5 font-body text-sm text-muted">
+            <MapPin size={18} strokeWidth={1.75} className="shrink-0 text-gold" aria-hidden />
+            {site.address.area}, {site.address.city}
+          </p>
+          <p className="flex items-center gap-2.5 font-body text-sm text-muted">
+            <Clock size={18} strokeWidth={1.75} className="shrink-0 text-gold" aria-hidden />
+            {site.hours.days} · {site.hours.time}
           </p>
         </div>
-        <ContactForm />
+
+        <p className="mt-8 text-center font-body text-sm text-muted">
+          <Link href="/impressum" className="hover:text-gold">Impressum</Link>
+          {" | "}
+          <Link href="/datenschutz" className="hover:text-gold">Datenschutz</Link>
+        </p>
       </Container>
     </Section>
   );
