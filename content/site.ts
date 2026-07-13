@@ -8,7 +8,7 @@ export const site = {
     city: "Dubai",
     country: "Vereinigte Arabische Emirate",
   },
-  phone: "+97 1506061687",
+  phone: "+971 50 60 61 687",
   phoneHref: "tel:+971506061687",
   whatsapp: "https://wa.me/971506061687",
   email: "business@uyermanagement.com",
@@ -17,7 +17,7 @@ export const site = {
     { href: "/", label: "Home" },
     { href: "/leistungen", label: "Leistungen" },
     { href: "/fuer-unternehmen", label: "Für Unternehmen" },
-    { href: "/karriere", label: "Karriere" },
+    { href: "/karriere", label: "Jetzt Bewerben" },
     { href: "/kontakt", label: "Kontakt" },
   ],
   services: [

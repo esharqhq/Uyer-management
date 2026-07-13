@@ -32,7 +32,7 @@ export function IntroSplit() {
           />
         </AnimatedSection>
         <AnimatedSection stagger={0.12}>
-          <p className="font-body text-sm font-semibold uppercase tracking-[0.2em] text-navy">
+          <p className="font-body text-sm font-semibold uppercase tracking-[0.2em] text-gold">
             Über uns
           </p>
           <h2 id="intro-heading" className="mt-3 font-display text-3xl font-semibold">

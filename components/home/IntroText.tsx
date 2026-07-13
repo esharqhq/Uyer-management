@@ -34,7 +34,7 @@ export function IntroText() {
             <span className="block">in Österreich &amp; Deutschland</span>
           </h2>
 
-          <p className="mx-auto mt-6 max-w-2xl font-body leading-7 text-surface/75">
+          <p className="mx-auto mt-6 max-w-2xl font-body leading-7 text-text/75">
             Die richtige Person am richtigen Arbeitsplatz – genau dafür steht Uyer
             Management. Unsere professionelle Personalvermittlung bringt Unternehmen
             und qualifizierte Arbeitskräfte aus der Gebäudereinigung zuverlässig

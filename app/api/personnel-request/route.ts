@@ -43,7 +43,8 @@ export async function POST(req: Request) {
         <p><b>Anmerkungen:</b></p>
         <p>${esc(d.anmerkungen || "–")}</p>`,
     });
-  } catch {
+  } catch (err) {
+    console.error("[personnel-request] sendMail threw:", err);
     return NextResponse.json(
       { ok: false, errors: ["Senden fehlgeschlagen. Bitte versuchen Sie es später erneut."] },
       { status: 502 },

@@ -6,27 +6,14 @@ import { MapContainer, TileLayer, Marker } from "react-leaflet";
 
 type City = { name: string; lat: number; lng: number };
 
-/* Deployment cities — identical to the two country cards below the map. */
+/* Head office — Meydan Grandstand, Nad Al Sheba, Dubai. */
 const CITIES: City[] = [
-  // Österreich
-  { name: "Wien", lat: 48.2082, lng: 16.3738 },
-  { name: "Linz", lat: 48.3069, lng: 14.2858 },
-  { name: "Salzburg", lat: 47.8095, lng: 13.055 },
-  { name: "Graz", lat: 47.0707, lng: 15.4395 },
-  { name: "Innsbruck", lat: 47.2692, lng: 11.4041 },
-  // Deutschland
-  { name: "München", lat: 48.1351, lng: 11.582 },
-  { name: "Stuttgart", lat: 48.7758, lng: 9.1829 },
-  { name: "Frankfurt", lat: 50.1109, lng: 8.6821 },
-  { name: "Köln", lat: 50.9375, lng: 6.9603 },
-  { name: "Berlin", lat: 52.52, lng: 13.405 },
-  { name: "Hamburg", lat: 53.5511, lng: 9.9937 },
+  { name: "Uyer Management", lat: 25.1587, lng: 55.302 },
 ];
 
-/* Centered on the DACH region so all cities sit within a tight, intentional
-   frame (fitBounds would zoom out far enough to show all of Europe). */
-const CENTER: [number, number] = [50.3, 11.4];
-const DEFAULT_ZOOM = 6;
+/* Centered on the Dubai head office with enough city context to read. */
+const CENTER: [number, number] = [25.1587, 55.302];
+const DEFAULT_ZOOM = 11;
 
 const prefersReducedMotion =
   typeof window !== "undefined" &&
@@ -51,14 +38,14 @@ export default function MapCanvas() {
     <MapContainer
       center={CENTER}
       zoom={DEFAULT_ZOOM}
-      minZoom={5}
-      maxZoom={9}
+      minZoom={3}
+      maxZoom={16}
       scrollWheelZoom={false}
       zoomAnimation={!prefersReducedMotion}
       fadeAnimation={!prefersReducedMotion}
       markerZoomAnimation={!prefersReducedMotion}
       className="h-full w-full"
-      style={{ background: "var(--color-paper)" }}
+      style={{ background: "#e9e7e2" }}
     >
       <TileLayer
         url="https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png"

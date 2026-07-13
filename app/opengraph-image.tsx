@@ -15,7 +15,7 @@ export default function OgImage() {
           flexDirection: "column",
           alignItems: "center",
           justifyContent: "center",
-          background: "#0E2A47",
+          background: "#12110E",
           color: "#C6A15B",
           fontSize: 72,
           fontWeight: 700,
@@ -23,7 +23,7 @@ export default function OgImage() {
         }}
       >
         <div style={{ display: "flex" }}>UYER MANAGEMENT</div>
-        <div style={{ display: "flex", fontSize: 28, color: "#F6F7F9", marginTop: 24 }}>
+        <div style={{ display: "flex", fontSize: 28, color: "#ECE8E1", marginTop: 24 }}>
           Qualifiziertes Personal für die Gebäudereinigung
         </div>
         <div

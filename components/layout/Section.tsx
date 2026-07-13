@@ -3,8 +3,8 @@ import { cn } from "@/lib/cn";
 const tones = {
   light: "bg-paper text-text",
   surface: "bg-surface text-text",
-  wash: "bg-gold-wash text-text",
-  dark: "bg-ink text-surface",
+  wash: "bg-surface text-text",
+  dark: "bg-ink text-text",
 } as const;
 
 export function Section({

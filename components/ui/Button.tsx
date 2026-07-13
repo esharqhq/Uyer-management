@@ -4,10 +4,10 @@ import { cn } from "@/lib/cn";
 type Variant = "primary" | "accent" | "outline";
 
 const variants: Record<Variant, string> = {
-  primary: "bg-ink text-surface hover:brightness-110",
+  primary: "bg-ink text-text ring-1 ring-line hover:ring-gold/60",
   accent: "bg-gold text-ink hover:brightness-95",
   outline:
-    "bg-transparent text-navy border-navy hover:bg-navy/5 data-[on-dark=true]:text-gold data-[on-dark=true]:border-gold data-[on-dark=true]:hover:bg-gold/10",
+    "bg-transparent text-gold border-gold hover:bg-gold/10",
 };
 
 type Props = {
@@ -34,7 +34,7 @@ export function Button({
     "inline-block rounded-lg border border-transparent px-5 py-3 font-body font-medium transition",
     variants[variant],
     variant === "outline" && "border-current",
-    "disabled:cursor-not-allowed disabled:bg-muted disabled:text-surface/70",
+    "disabled:cursor-not-allowed disabled:bg-muted disabled:text-text/70",
     className,
   );
   if (href) {

@@ -92,8 +92,8 @@ function Stepper({ current }: { current: number }) {
               <span
                 className={cn(
                   "flex size-8 shrink-0 items-center justify-center rounded-full font-body text-sm font-semibold transition",
-                  done && "bg-ink text-surface",
-                  active && "bg-ink text-surface ring-2 ring-gold ring-offset-2",
+                  done && "bg-gold text-ink",
+                  active && "bg-gold text-ink ring-2 ring-gold ring-offset-2 ring-offset-surface",
                   !done && !active && "border border-line bg-surface text-muted",
                 )}
               >
@@ -294,7 +294,7 @@ export function ApplyForm() {
       )}
 
       {status === "error" && isLast && (
-        <p role="alert" className="mt-4 font-body text-sm text-red-700">
+        <p role="alert" className="mt-4 font-body text-sm text-red-400">
           {serverErrors.length > 0
             ? serverErrors.join(" ")
             : "Senden fehlgeschlagen. Bitte versuchen Sie es später erneut."}

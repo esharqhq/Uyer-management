@@ -16,7 +16,7 @@ export default function KarrierePage() {
   return (
     <>
       <PageHero
-        title="Karriere"
+        title="Jetzt Bewerben"
         subtitle="Werden Sie Teil unseres Netzwerks – wir vermitteln Sie an geprüfte Betriebe in Österreich & Deutschland."
         image="/images/section-team.jpg"
       />

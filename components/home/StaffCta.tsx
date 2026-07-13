@@ -23,7 +23,7 @@ export function StaffCta() {
   return (
     <section
       aria-labelledby="staff-cta-heading"
-      className="relative overflow-hidden bg-ink py-24 text-surface sm:py-32"
+      className="relative overflow-hidden bg-ink py-24 text-text sm:py-32"
     >
       <Image
         src="/images/hero-services.jpg"
@@ -43,7 +43,7 @@ export function StaffCta() {
           >
             Sie suchen Personal?
           </h2>
-          <p className="mx-auto mt-5 max-w-xl font-body text-lg leading-8 text-surface/85">
+          <p className="mx-auto mt-5 max-w-xl font-body text-lg leading-8 text-text/85">
             Rufen Sie uns jetzt an und erfahren Sie, wie wir Ihr Unternehmen
             zuverlässig unterstützen.
           </p>

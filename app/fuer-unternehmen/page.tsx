@@ -40,7 +40,7 @@ export default function FuerUnternehmenPage() {
       />
       <Section tone="light" aria-labelledby="process-heading">
         <Container>
-          <p className="text-center font-body text-sm font-semibold uppercase tracking-[0.2em] text-navy">
+          <p className="text-center font-body text-sm font-semibold uppercase tracking-[0.2em] text-gold">
             Ablauf
           </p>
           <h2 id="process-heading" className="mt-3 text-center font-display text-3xl font-semibold">
@@ -55,7 +55,7 @@ export default function FuerUnternehmenPage() {
                 <span className="absolute right-5 top-4 font-display text-2xl text-gold/40">
                   {i + 1}
                 </span>
-                <span className="inline-flex size-14 items-center justify-center rounded-full bg-gold-wash text-navy transition duration-300 group-hover:bg-gold group-hover:text-ink">
+                <span className="inline-flex size-14 items-center justify-center rounded-full bg-gold-wash text-gold transition duration-300 group-hover:bg-gold group-hover:text-ink">
                   <s.icon size={26} strokeWidth={1.75} aria-hidden />
                 </span>
                 <h3 className="mt-5 font-display text-xl font-semibold">{s.title}</h3>

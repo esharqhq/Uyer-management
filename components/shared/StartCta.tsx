@@ -11,7 +11,7 @@ export function StartCta() {
           <h2 id="start-cta-heading" className="font-display text-3xl font-semibold text-gold">
             Lass uns gemeinsam starten!
           </h2>
-          <p className="mx-auto mt-4 max-w-xl font-body text-surface/85">
+          <p className="mx-auto mt-4 max-w-xl font-body text-text/85">
             Mit Uyer Management haben Sie einen Partner an Ihrer Seite, der Ihre
             Bedürfnisse versteht und individuelle Lösungen anbietet.
           </p>

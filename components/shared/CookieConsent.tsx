@@ -42,7 +42,7 @@ export function CookieConsent() {
     >
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center">
         <div className="flex items-start gap-3">
-          <span className="mt-0.5 inline-flex size-9 shrink-0 items-center justify-center rounded-full bg-gold-wash text-navy">
+          <span className="mt-0.5 inline-flex size-9 shrink-0 items-center justify-center rounded-full bg-gold-wash text-gold">
             <Cookie size={18} strokeWidth={1.75} aria-hidden />
           </span>
           <div>
@@ -52,7 +52,7 @@ export function CookieConsent() {
             <p className="mt-1 font-body text-sm leading-6 text-muted">
               Wir verwenden ausschließlich technisch notwendige Cookies für den
               Betrieb dieser Website. Weitere Informationen finden Sie in unserer{" "}
-              <Link href="/datenschutz" className="text-navy underline hover:text-gold">
+              <Link href="/datenschutz" className="text-gold underline hover:text-gold">
                 Datenschutzerklärung
               </Link>
               .

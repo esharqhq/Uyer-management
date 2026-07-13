@@ -37,7 +37,7 @@ export const FileUpload = forwardRef<HTMLInputElement, Props>(
             "block cursor-pointer rounded-lg border border-dashed px-4 py-6 text-center font-body text-sm transition focus-within:outline-2 focus-within:outline-gold focus-within:outline-offset-2",
             selected
               ? "border-green-600 bg-green-600/10"
-              : "border-line bg-surface hover:border-navy",
+              : "border-line bg-surface hover:border-gold",
           )}
         >
           {selected ? (

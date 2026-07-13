@@ -10,7 +10,9 @@ import { runHeroIntro } from "@/components/motion/hero-animation";
 
 gsap.registerPlugin(useGSAP);
 
-/** The cut-out glass-tower photo used for the 3D pop-out block. */
+/** The cut-out glass-tower photo used for the 3D pop-out block.
+ *  Warm-graded via CSS filter so the cool blue glass reads champagne/bronze
+ *  and sits naturally inside the black-and-gold theme. */
 function HeroBuilding({ fit = "object-cover" }: { fit?: string }) {
   return (
     <Image
@@ -20,7 +22,7 @@ function HeroBuilding({ fit = "object-cover" }: { fit?: string }) {
       priority
       quality={75}
       sizes="(min-width: 1024px) 45vw, 90vw"
-      className={fit}
+      className={`${fit} [filter:sepia(0.5)_saturate(0.85)_hue-rotate(-14deg)_brightness(0.98)]`}
     />
   );
 }
@@ -58,11 +60,16 @@ export function Hero() {
       <Container>
         {/* Navy card — the surface floats on the light page; overflow stays
             visible so the building can break above the card's top edge. */}
-        <div className="relative rounded-4xl bg-linear-to-r from-ink via-ink to-navy shadow-2xl shadow-ink/30 ring-1 ring-gold/15">
+        <div className="relative rounded-4xl bg-linear-to-r from-ink via-ink to-navy shadow-2xl shadow-ink/30 ring-1 ring-gold/25">
           {/* Faint gold glow behind the headline */}
           <div
             aria-hidden
             className="pointer-events-none absolute left-8 top-10 h-56 w-56 rounded-full bg-gold/10 blur-3xl"
+          />
+          {/* Warm halo behind the tower so it melts into the card */}
+          <div
+            aria-hidden
+            className="pointer-events-none absolute -right-10 top-1/2 hidden h-[130%] w-[46%] -translate-y-1/2 rounded-full bg-gold/[0.07] blur-3xl lg:block"
           />
 
           <div className="relative grid items-stretch lg:grid-cols-[1.18fr_0.82fr]">
@@ -76,7 +83,7 @@ export function Hero() {
               </p>
               <h1
                 data-hero-line
-                className="mt-5 font-display text-4xl font-bold uppercase leading-[1.05] text-surface sm:text-5xl lg:text-[2.9rem] xl:text-[3.25rem]"
+                className="mt-5 font-display text-4xl font-bold uppercase leading-[1.05] text-gold sm:text-5xl lg:text-[2.9rem] xl:text-[3.25rem]"
               >
                 Qualifiziertes
                 <br />
@@ -84,7 +91,7 @@ export function Hero() {
               </h1>
               <p
                 data-hero-line
-                className="mt-5 max-w-md font-body text-lg text-surface/80"
+                className="mt-5 max-w-md font-body text-lg text-text/80"
               >
                 für die Gebäudereinigung in Österreich &amp; Deutschland
               </p>

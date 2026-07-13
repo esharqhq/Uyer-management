@@ -26,7 +26,7 @@ export default function LeistungenPage() {
       <Section tone="surface" aria-labelledby="together-heading">
         <Container className="grid items-center gap-12 lg:grid-cols-2">
           <AnimatedSection stagger={0.12}>
-            <p className="font-body text-sm font-semibold uppercase tracking-[0.2em] text-navy">
+            <p className="font-body text-sm font-semibold uppercase tracking-[0.2em] text-gold">
               Partnerschaft
             </p>
             <h2 id="together-heading" className="mt-3 font-display text-3xl font-semibold">

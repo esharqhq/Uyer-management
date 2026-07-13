@@ -16,7 +16,7 @@ export function ContactBlock() {
     <Section tone="light" aria-labelledby="contact-heading">
       <Container>
         <AnimatedSection className="mx-auto max-w-2xl text-center">
-          <p className="font-body text-sm font-semibold uppercase tracking-[0.2em] text-navy">
+          <p className="font-body text-sm font-semibold uppercase tracking-[0.2em] text-gold">
             Kontakt
           </p>
           <h2 id="contact-heading" className="mt-3 font-display text-3xl font-semibold">
@@ -35,7 +35,7 @@ export function ContactBlock() {
               href={m.href}
               className="group flex flex-col items-center gap-3 rounded-lg border border-line bg-surface p-7 text-center shadow-sm transition duration-300 hover:-translate-y-1.5 hover:border-gold/50 hover:shadow-lg"
             >
-              <span className="inline-flex size-14 items-center justify-center rounded-full bg-gold-wash text-navy transition duration-300 group-hover:bg-gold group-hover:text-ink">
+              <span className="inline-flex size-14 items-center justify-center rounded-full bg-gold-wash text-gold transition duration-300 group-hover:bg-gold group-hover:text-ink">
                 <m.icon size={26} strokeWidth={1.75} aria-hidden />
               </span>
               <span className="mt-1 font-display text-lg font-semibold">{m.label}</span>
@@ -59,6 +59,8 @@ export function ContactBlock() {
           <Link href="/impressum" className="hover:text-gold">Impressum</Link>
           {" | "}
           <Link href="/datenschutz" className="hover:text-gold">Datenschutz</Link>
+          {" | "}
+          <Link href="/agb" className="hover:text-gold">AGB</Link>
         </p>
       </Container>
     </Section>

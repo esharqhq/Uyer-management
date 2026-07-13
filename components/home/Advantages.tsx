@@ -30,7 +30,7 @@ export function Advantages() {
   return (
     <Section tone="surface" aria-labelledby="advantages-heading">
       <Container>
-        <p className="text-center font-body text-sm font-semibold uppercase tracking-[0.2em] text-navy">
+        <p className="text-center font-body text-sm font-semibold uppercase tracking-[0.2em] text-gold">
           Ihr Vorteil
         </p>
         <h2 id="advantages-heading" className="mt-3 text-center font-display text-3xl font-semibold">
@@ -56,13 +56,13 @@ export function Advantages() {
           {points.map((p) => (
             <div
               key={p.title}
-              className="group flex gap-5 rounded-2xl border border-line bg-paper p-6 transition duration-300 ease-out hover:-translate-y-1 hover:border-gold/40 hover:bg-surface hover:shadow-[0_22px_44px_-22px_rgba(14,42,71,0.28)]"
+              className="group flex gap-5 rounded-2xl border border-line bg-paper p-6 transition duration-300 ease-out hover:-translate-y-1 hover:border-gold/40 hover:bg-surface hover:shadow-[0_22px_44px_-22px_rgba(0,0,0,0.28)]"
             >
-              <span className="inline-flex size-12 shrink-0 items-center justify-center rounded-xl bg-ink text-surface shadow-sm transition duration-300 group-hover:bg-gold group-hover:text-ink">
+              <span className="inline-flex size-12 shrink-0 items-center justify-center rounded-xl bg-ink text-gold ring-1 ring-gold/25 shadow-sm transition duration-300 group-hover:bg-gold group-hover:text-ink">
                 <p.icon size={22} strokeWidth={1.75} aria-hidden />
               </span>
               <div>
-                <h3 className="font-display text-lg font-semibold text-ink transition-colors duration-300 group-hover:text-navy">
+                <h3 className="font-display text-lg font-semibold text-text transition-colors duration-300 group-hover:text-gold">
                   {p.title}
                 </h3>
                 <p className="mt-2 font-body text-sm leading-6 text-muted">{p.text}</p>

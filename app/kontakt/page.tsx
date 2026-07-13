@@ -24,7 +24,7 @@ export default function KontaktPage() {
       <Section tone="wash" aria-labelledby="map-heading">
         <Container>
           <AnimatedSection className="mx-auto max-w-2xl text-center">
-            <p className="font-body text-sm font-semibold uppercase tracking-[0.2em] text-navy">
+            <p className="font-body text-sm font-semibold uppercase tracking-[0.2em] text-gold">
               Einsatzgebiete
             </p>
             <h2 id="map-heading" className="mt-3 font-display text-3xl font-semibold">

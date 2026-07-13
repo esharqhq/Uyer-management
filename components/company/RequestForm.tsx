@@ -92,7 +92,7 @@ export function RequestForm() {
         {...register("consent")}
       />
       {status === "error" && (
-        <p role="alert" className="mt-4 font-body text-sm text-red-700">
+        <p role="alert" className="mt-4 font-body text-sm text-red-400">
           Senden fehlgeschlagen. Bitte versuchen Sie es später erneut.
         </p>
       )}
