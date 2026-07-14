@@ -17,6 +17,13 @@
   --font-body: var(--font-montserrat), system-ui, sans-serif;
 }
 
+/* Smooth in-page anchor scrolling (e.g. hero CTA → #anfrage form) */
+@media (prefers-reduced-motion: no-preference) {
+  html {
+    scroll-behavior: smooth;
+  }
+}
+
 body {
   background: var(--color-paper);
   color: var(--color-text);

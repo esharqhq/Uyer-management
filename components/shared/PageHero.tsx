@@ -1,13 +1,16 @@
 import Image from "next/image";
+import { Button } from "@/components/ui/Button";
 
 export function PageHero({
   title,
   subtitle,
   image,
+  cta,
 }: {
   title: string;
   subtitle?: string;
   image: string;
+  cta?: { label: string; href: string };
 }) {
   return (
     <section className="relative flex min-h-[42vh] items-center overflow-hidden bg-ink text-text">
@@ -18,6 +21,13 @@ export function PageHero({
           {title}
         </h1>
         {subtitle && <p className="mt-4 font-body text-text/90">{subtitle}</p>}
+        {cta && (
+          <div className="mt-8">
+            <Button variant="accent" href={cta.href}>
+              {cta.label}
+            </Button>
+          </div>
+        )}
       </div>
     </section>
   );

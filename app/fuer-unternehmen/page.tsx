@@ -37,6 +37,7 @@ export default function FuerUnternehmenPage() {
         title="Für Unternehmen"
         subtitle="Zuverlässiges Personal für Ihre Gebäudereinigung – ohne administrativen Aufwand."
         image="/images/hero-services.jpg"
+        cta={{ label: "Jetzt Personal anfragen", href: "#anfrage" }}
       />
       <Section tone="light" aria-labelledby="process-heading">
         <Container>
@@ -81,7 +82,7 @@ export default function FuerUnternehmenPage() {
           </AnimatedSection>
         </Container>
       </Section>
-      <Section tone="light" aria-labelledby="request-heading">
+      <Section id="anfrage" tone="light" aria-labelledby="request-heading" className="scroll-mt-20">
         <Container className="grid gap-12 lg:grid-cols-[2fr_3fr]">
           <AnimatedSection>
             <h2 id="request-heading" className="font-display text-3xl font-semibold">
