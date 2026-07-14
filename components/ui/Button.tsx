@@ -31,9 +31,11 @@ export function Button({
   ...rest
 }: Props) {
   const classes = cn(
-    "inline-block rounded-lg border border-transparent px-5 py-3 font-body font-medium transition",
+    "inline-block rounded-lg border px-5 py-3 font-body font-medium transition",
     variants[variant],
-    variant === "outline" && "border-current",
+    // cn() is plain concat, so a base border-transparent would conflict with
+    // the outline variant's border-gold (stylesheet order decides the winner)
+    variant !== "outline" && "border-transparent",
     "disabled:cursor-not-allowed disabled:bg-muted disabled:text-text/70",
     className,
   );

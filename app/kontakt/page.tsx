@@ -19,6 +19,8 @@ export default function KontaktPage() {
         title="Kontakt aufnehmen"
         subtitle="Wir freuen uns auf Ihre Anfrage – telefonisch, per WhatsApp oder E-Mail."
         image="/images/kontakt.jpg"
+        cta={{ label: "Jetzt bewerben", href: "/karriere", variant: "outline" }}
+        secondaryCta={{ label: "Personal anfragen", href: "/fuer-unternehmen" }}
       />
       <ContactBlock />
       <Section tone="wash" aria-labelledby="map-heading">

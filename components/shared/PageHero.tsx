@@ -1,16 +1,20 @@
 import Image from "next/image";
 import { Button } from "@/components/ui/Button";
 
+type HeroCta = { label: string; href: string; variant?: "accent" | "outline" };
+
 export function PageHero({
   title,
   subtitle,
   image,
   cta,
+  secondaryCta,
 }: {
   title: string;
   subtitle?: string;
   image: string;
-  cta?: { label: string; href: string };
+  cta?: HeroCta;
+  secondaryCta?: HeroCta;
 }) {
   return (
     <section className="relative flex min-h-[42vh] items-center overflow-hidden bg-ink text-text">
@@ -21,11 +25,23 @@ export function PageHero({
           {title}
         </h1>
         {subtitle && <p className="mt-4 font-body text-text/90">{subtitle}</p>}
-        {cta && (
-          <div className="mt-8">
-            <Button variant="accent" href={cta.href}>
-              {cta.label}
-            </Button>
+        {(cta || secondaryCta) && (
+          <div className="mt-8 flex flex-col items-center justify-center gap-4 sm:flex-row">
+            {[cta, secondaryCta].filter(Boolean).map((action) => {
+              const { label, href, variant } = action as HeroCta;
+              const resolved = variant ?? (action === cta ? "accent" : "outline");
+              return (
+                <Button
+                  key={href}
+                  variant={resolved}
+                  onDark={resolved === "outline"}
+                  href={href}
+                  className="w-full sm:w-auto sm:min-w-52 text-center"
+                >
+                  {label}
+                </Button>
+              );
+            })}
           </div>
         )}
       </div>
