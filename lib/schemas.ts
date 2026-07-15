@@ -6,11 +6,7 @@ export const LAENDER = ["Österreich", "Deutschland", "Schweiz"] as const;
 
 // Documents (Ausweis, Meldezettel, E-Card, Lebenslauf): PDF or photo, max 10 MB.
 export const DOC_MAX_BYTES = 10 * 1024 * 1024;
-export const DOC_TYPES = [
-  "application/pdf",
-  "image/jpeg",
-  "image/png",
-];
+export const DOC_TYPES = ["application/pdf", "image/jpeg", "image/png"];
 
 const consent = z
   .boolean()
@@ -27,7 +23,9 @@ export const contactSchema = z.object({
   lastName: z.string().min(2, "Bitte geben Sie Ihren Nachnamen ein."),
   phone: optionalText,
   email,
-  message: z.string().min(10, "Bitte geben Sie Ihre Nachricht ein (mind. 10 Zeichen)."),
+  message: z
+    .string()
+    .min(10, "Bitte geben Sie Ihre Nachricht ein (mind. 10 Zeichen)."),
   consent,
 });
 export type ContactInput = z.infer<typeof contactSchema>;
@@ -52,24 +50,14 @@ export const applySchema = z.object({
 export type ApplyInput = z.infer<typeof applySchema>;
 
 // Regions we staff — shown in the Personalanfrage form's Einsatzort select.
-export const EINSATZORTE = [
-  "Salzburg & Umgebung",
-  "Wien",
-  "Oberösterreich",
-  "München",
-  "Rosenheim",
-  "Berchtesgadener Land",
-  "Bad Reichenhall",
-  "Freilassing",
-  "Traunstein",
-  "Bad Aibling",
-  "Tittmoning",
-] as const;
+export const EINSATZORTE = ["Austria", "Germany"] as const;
 
 // Company request for staff (/fuer-unternehmen → /api/personnel-request).
 export const personnelRequestSchema = z.object({
   firmenname: z.string().min(2, "Bitte geben Sie den Firmennamen ein."),
-  ansprechpartner: z.string().min(2, "Bitte geben Sie einen Ansprechpartner ein."),
+  ansprechpartner: z
+    .string()
+    .min(2, "Bitte geben Sie einen Ansprechpartner ein."),
   email,
   telefon: z.string().min(6, "Bitte geben Sie Ihre Telefonnummer ein."),
   position: z.string().min(2, "Bitte geben Sie die gesuchte Position ein."),
@@ -77,7 +65,9 @@ export const personnelRequestSchema = z.object({
     .number({ message: "Bitte geben Sie die Anzahl der Mitarbeiter an." })
     .int("Bitte geben Sie eine ganze Zahl an.")
     .min(1, "Bitte geben Sie die Anzahl der Mitarbeiter an (mind. 1)."),
-  einsatzort: z.enum(EINSATZORTE, { message: "Bitte wählen Sie einen Einsatzort." }),
+  einsatzort: z.enum(EINSATZORTE, {
+    message: "Bitte wählen Sie einen Einsatzort.",
+  }),
   startdatum: optionalText,
   anmerkungen: optionalText,
   consent,
@@ -86,11 +76,36 @@ export type PersonnelRequestInput = z.infer<typeof personnelRequestSchema>;
 
 // German labels for the document uploads — reused by the form and the email.
 export const APPLY_DOCS = [
-  { key: "ausweis", label: "Ausweis / Reisepass", required: true, slug: "ausweis" },
-  { key: "meldezettel", label: "Meldezettel", required: true, slug: "meldezettel" },
-  { key: "ecardVorne", label: "E-Card Vorderseite", required: true, slug: "ecard_vorne" },
-  { key: "ecardHinten", label: "E-Card Rückseite", required: true, slug: "ecard_hinten" },
-  { key: "lebenslauf", label: "Lebenslauf / CV", required: false, slug: "lebenslauf" },
+  {
+    key: "ausweis",
+    label: "Ausweis / Reisepass",
+    required: true,
+    slug: "ausweis",
+  },
+  {
+    key: "meldezettel",
+    label: "Meldezettel",
+    required: true,
+    slug: "meldezettel",
+  },
+  {
+    key: "ecardVorne",
+    label: "E-Card Vorderseite",
+    required: true,
+    slug: "ecard_vorne",
+  },
+  {
+    key: "ecardHinten",
+    label: "E-Card Rückseite",
+    required: true,
+    slug: "ecard_hinten",
+  },
+  {
+    key: "lebenslauf",
+    label: "Lebenslauf / CV",
+    required: false,
+    slug: "lebenslauf",
+  },
 ] as const;
 
 export type ApplyDocKey = (typeof APPLY_DOCS)[number]["key"];
