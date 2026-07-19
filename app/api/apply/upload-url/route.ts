@@ -6,15 +6,32 @@ const DOC_KEYS = new Set<string>(APPLY_DOCS.map((d) => d.key));
 const UUID_RE =
   /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
-// Keep only characters safe for a storage object name; collapse the rest.
-function safeName(name: string) {
-  const base = name.split(/[\\/]/).pop() ?? "datei";
-  return (
+// Extensions Supabase Storage will accept for us, matched case-insensitively.
+const ALLOWED_EXT = new Set(["jpg", "jpeg", "png", "webp", "pdf"]);
+
+// Strictly sanitize a client filename into a Supabase-safe object name.
+// Phone-camera names carry spaces, umlauts, parentheses, Cyrillic, etc. — all
+// rejected by Storage — so we reduce the base to [a-z0-9-] and validate the
+// extension against an allowlist. Returns null if the extension is not allowed.
+function sanitizeName(name: string): string | null {
+  const base = name.split(/[\\/]/).pop() ?? "";
+  const dot = base.lastIndexOf(".");
+  if (dot < 1) return null; // no extension → reject
+  const ext = base.slice(dot + 1).toLowerCase();
+  if (!ALLOWED_EXT.has(ext)) return null;
+
+  const cleaned =
     base
-      .replace(/[^a-zA-Z0-9._-]+/g, "_")
-      .replace(/^_+|_+$/g, "")
-      .slice(0, 80) || "datei"
-  );
+      .slice(0, dot)
+      .replace(/ä/g, "ae").replace(/ö/g, "oe").replace(/ü/g, "ue").replace(/ß/g, "ss")
+      .replace(/Ä/g, "ae").replace(/Ö/g, "oe").replace(/Ü/g, "ue")
+      .toLowerCase()
+      .replace(/[^a-z0-9]+/g, "-")
+      .replace(/-+/g, "-")
+      .replace(/^-+|-+$/g, "")
+      .slice(0, 40) || "file";
+
+  return `${cleaned}.${ext}`;
 }
 
 type FileReq = {
@@ -76,7 +93,16 @@ export async function POST(req: Request) {
   const uploads: { docKey: string; path: string; signedUrl: string; token: string }[] = [];
 
   for (const f of files) {
-    const path = `${submissionId}/${f.docKey}-${safeName(f.filename)}`;
+    const sanitized = sanitizeName(f.filename);
+    if (!sanitized) {
+      return NextResponse.json(
+        { ok: false, errors: ["Bitte laden Sie die Dateien als PDF, JPG, PNG oder WEBP hoch."] },
+        { status: 400 },
+      );
+    }
+    const path = `${submissionId}/${f.docKey}-${sanitized}`;
+    // TEMP DIAGNOSTIC: raw incoming name vs. final path (no file contents).
+    console.log("[apply:upload-url] path:", { raw: f.filename, path });
     const { data, error } = await supabase.storage
       .from(SUPABASE_BUCKET)
       .createSignedUploadUrl(path);
