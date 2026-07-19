@@ -190,13 +190,45 @@ export function ApplyForm() {
       const file = (data[doc.key] as FileList | undefined)?.[0];
       if (file) fd.set(doc.key, file);
     }
-    const res = await fetch("/api/apply", { method: "POST", body: fd }).catch(() => null);
-    if (res?.ok) {
-      setStatus("success");
-      reset();
-    } else {
-      const body = await res?.json().catch(() => null);
-      setServerErrors(Array.isArray(body?.errors) ? body.errors : []);
+
+    // DEBUG INSTRUMENTATION — do not swallow errors. We must see the real
+    // failure (thrown exception vs. non-2xx response) to diagnose Samsung
+    // Internet / older Android. Surface the actual message on screen too.
+    try {
+      const res = await fetch("/api/apply", { method: "POST", body: fd });
+
+      if (res.ok) {
+        setStatus("success");
+        reset();
+        return;
+      }
+
+      // fetch succeeded but the server rejected — capture status + body so a
+      // masked 413/500/502 is distinguishable from a network failure.
+      const text = await res.text().catch(() => "");
+      console.error(
+        `[apply] request failed: HTTP ${res.status} ${res.statusText}`,
+        text,
+      );
+      let parsed: unknown = null;
+      try {
+        parsed = text ? JSON.parse(text) : null;
+      } catch {
+        parsed = null;
+      }
+      const errs = (parsed as { errors?: unknown } | null)?.errors;
+      setServerErrors(
+        Array.isArray(errs)
+          ? (errs as string[])
+          : [`[Debug] HTTP ${res.status} ${res.statusText}${text ? `: ${text}` : ""}`],
+      );
+      setStatus("error");
+    } catch (err) {
+      // fetch itself threw — network error, or an exception before/around it.
+      // This is the case that previously showed the generic string with no clue.
+      const message = err instanceof Error ? `${err.name}: ${err.message}` : String(err);
+      console.error("[apply] fetch threw before reaching server:", err);
+      setServerErrors([`[Debug] ${message}`]);
       setStatus("error");
     }
   };
