@@ -8,10 +8,13 @@ import { createClient, type SupabaseClient } from "@supabase/supabase-js";
 // bucket, so this module MUST NEVER be imported from a client component.
 // The `server-only` import above turns any client import into a build error.
 
-const url = process.env.SUPABASE_URL;
-const secretKey = process.env.SUPABASE_SECRET_KEY;
+// .trim() is deliberate: a trailing newline/space in any of these (common
+// when pasting into a dashboard or .env) gets concatenated into the Storage
+// request URL and makes Supabase reject it as "Invalid path specified".
+const url = process.env.SUPABASE_URL?.trim();
+const secretKey = process.env.SUPABASE_SECRET_KEY?.trim();
 
-export const SUPABASE_BUCKET = process.env.SUPABASE_BUCKET ?? "applications";
+export const SUPABASE_BUCKET = (process.env.SUPABASE_BUCKET ?? "applications").trim();
 
 let client: SupabaseClient | null = null;
 

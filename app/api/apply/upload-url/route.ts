@@ -108,6 +108,11 @@ export async function POST(req: Request) {
       rawName: f.filename,
       finalPath: path,
     });
+    // TEMP DIAGNOSTIC: exact strings passed to Supabase, with quotes, so any
+    // leading slash / trailing whitespace / newline / hidden char is visible.
+    console.log("[apply:upload-url] EXACT path arg:", JSON.stringify(path));
+    console.log("[apply:upload-url] bucket:", JSON.stringify(SUPABASE_BUCKET));
+    console.log("[apply:upload-url] url:", JSON.stringify(process.env.SUPABASE_URL));
     const { data, error } = await supabase.storage
       .from(SUPABASE_BUCKET)
       .createSignedUploadUrl(path);
