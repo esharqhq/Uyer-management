@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import imageCompression from "browser-image-compression";
 import Link from "next/link";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -24,6 +25,30 @@ import { cn } from "@/lib/cn";
 
 const DOC_HINT = "PDF, JPG oder PNG · max. 10 MB";
 const DOC_ACCEPT = ".pdf,.jpg,.jpeg,.png";
+
+// Vercel serverless functions cap the request body at ~4.5 MB. Phone-camera
+// photos are several MB each, so we compress images in the browser before
+// upload and guard the combined payload to avoid a 413 at the platform level.
+const COMPRESSIBLE_TYPES = ["image/jpeg", "image/png", "image/webp"];
+const PDF_MAX_BYTES = 4 * 1024 * 1024; // per-file cap for an uncompressible PDF
+const TOTAL_MAX_BYTES = 4 * 1024 * 1024; // combined-payload safety margin < 4.5 MB
+const COMPRESSION_OPTIONS = {
+  maxSizeMB: 0.8,
+  maxWidthOrHeight: 1600, // keeps ID-document text legible — do not lower
+  useWebWorker: true,
+};
+
+// Compress a picked file when it is an image; leave PDFs (and anything else)
+// untouched. Returns a File suitable for FormData.
+async function prepareFile(file: File): Promise<File> {
+  if (!COMPRESSIBLE_TYPES.includes(file.type)) return file;
+  const compressed = await imageCompression(file, COMPRESSION_OPTIONS);
+  // browser-image-compression returns a Blob-like File; normalise the name.
+  return new File([compressed], file.name, {
+    type: compressed.type || file.type,
+    lastModified: file.lastModified,
+  });
+}
 
 const docFile = (required: boolean, subject: string) =>
   z
@@ -126,7 +151,9 @@ function Stepper({ current }: { current: number }) {
 
 export function ApplyForm() {
   const [step, setStep] = useState(0);
-  const [status, setStatus] = useState<"idle" | "sending" | "success" | "error">("idle");
+  const [status, setStatus] = useState<
+    "idle" | "processing" | "sending" | "success" | "error"
+  >("idle");
   const [serverErrors, setServerErrors] = useState<string[]>([]);
   const {
     register,
@@ -170,8 +197,47 @@ export function ApplyForm() {
   };
 
   const onSubmit = async (data: ApplyFormInput) => {
-    setStatus("sending");
     setServerErrors([]);
+
+    // ── Prepare files: compress images, cap PDFs, guard total payload ──────
+    // Runs entirely in the browser (this is a client component) before any
+    // network call, so the request stays under Vercel's ~4.5 MB body limit.
+    setStatus("processing");
+    const preparedDocs: { key: string; file: File }[] = [];
+    try {
+      for (const doc of APPLY_DOCS) {
+        const raw = (data[doc.key] as FileList | undefined)?.[0];
+        if (!raw) continue;
+        const file = await prepareFile(raw);
+        // A PDF (e.g. CV) cannot be image-compressed; reject if still too big.
+        if (!COMPRESSIBLE_TYPES.includes(file.type) && file.size > PDF_MAX_BYTES) {
+          setServerErrors([
+            `„${doc.label}": Die Datei ist zu groß (max. 4 MB). Bitte laden Sie ein kleineres PDF hoch.`,
+          ]);
+          setStatus("error");
+          return;
+        }
+        preparedDocs.push({ key: doc.key, file });
+      }
+    } catch (err) {
+      console.error("[apply] image compression failed:", err);
+      setServerErrors([
+        "Die Bilder konnten nicht verarbeitet werden. Bitte versuchen Sie es erneut oder laden Sie kleinere Dateien hoch.",
+      ]);
+      setStatus("error");
+      return;
+    }
+
+    const totalBytes = preparedDocs.reduce((sum, d) => sum + d.file.size, 0);
+    if (totalBytes > TOTAL_MAX_BYTES) {
+      setServerErrors([
+        "Die Dateien sind zu groß. Bitte laden Sie kleinere Bilder oder ein kleineres PDF hoch (max. ca. 4 MB gesamt).",
+      ]);
+      setStatus("error");
+      return;
+    }
+
+    // ── Assemble multipart body ────────────────────────────────────────────
     const fd = new FormData();
     fd.set("anrede", data.anrede);
     fd.set("vorname", data.vorname);
@@ -186,10 +252,9 @@ export function ApplyForm() {
     fd.set("land", data.land);
     fd.set("berufserfahrung", data.berufserfahrung ?? "");
     fd.set("consent", String(data.consent));
-    for (const doc of APPLY_DOCS) {
-      const file = (data[doc.key] as FileList | undefined)?.[0];
-      if (file) fd.set(doc.key, file);
-    }
+    for (const doc of preparedDocs) fd.set(doc.key, doc.file);
+
+    setStatus("sending");
 
     // DEBUG INSTRUMENTATION — do not swallow errors. We must see the real
     // failure (thrown exception vs. non-2xx response) to diagnose Samsung
@@ -343,8 +408,16 @@ export function ApplyForm() {
           <span />
         )}
         {isLast ? (
-          <Button variant="accent" type="submit" disabled={status === "sending"}>
-            {status === "sending" ? "Wird gesendet …" : "Jetzt bewerben"}
+          <Button
+            variant="accent"
+            type="submit"
+            disabled={status === "processing" || status === "sending"}
+          >
+            {status === "processing"
+              ? "Wird verarbeitet …"
+              : status === "sending"
+                ? "Wird gesendet …"
+                : "Jetzt bewerben"}
           </Button>
         ) : (
           <Button variant="primary" type="button" onClick={goNext}>
