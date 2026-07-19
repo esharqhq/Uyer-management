@@ -1,7 +1,6 @@
 "use client";
 
 import { useState } from "react";
-import imageCompression from "browser-image-compression";
 import Link from "next/link";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -26,29 +25,15 @@ import { cn } from "@/lib/cn";
 const DOC_HINT = "PDF, JPG oder PNG · max. 10 MB";
 const DOC_ACCEPT = ".pdf,.jpg,.jpeg,.png";
 
-// Vercel serverless functions cap the request body at ~4.5 MB. Phone-camera
-// photos are several MB each, so we compress images in the browser before
-// upload and guard the combined payload to avoid a 413 at the platform level.
-const COMPRESSIBLE_TYPES = ["image/jpeg", "image/png", "image/webp"];
-const PDF_MAX_BYTES = 4 * 1024 * 1024; // per-file cap for an uncompressible PDF
-const TOTAL_MAX_BYTES = 4 * 1024 * 1024; // combined-payload safety margin < 4.5 MB
-const COMPRESSION_OPTIONS = {
-  maxSizeMB: 0.8,
-  maxWidthOrHeight: 1600, // keeps ID-document text legible — do not lower
-  useWebWorker: true,
+// Files are uploaded DIRECTLY from the browser to Supabase Storage via a
+// short-lived signed URL, so the file bytes never pass through the Vercel
+// function — this sidesteps the platform's ~4.5 MB request-body limit (413).
+type SignedUpload = {
+  docKey: string;
+  path: string;
+  signedUrl: string;
+  token: string;
 };
-
-// Compress a picked file when it is an image; leave PDFs (and anything else)
-// untouched. Returns a File suitable for FormData.
-async function prepareFile(file: File): Promise<File> {
-  if (!COMPRESSIBLE_TYPES.includes(file.type)) return file;
-  const compressed = await imageCompression(file, COMPRESSION_OPTIONS);
-  // browser-image-compression returns a Blob-like File; normalise the name.
-  return new File([compressed], file.name, {
-    type: compressed.type || file.type,
-    lastModified: file.lastModified,
-  });
-}
 
 const docFile = (required: boolean, subject: string) =>
   z
@@ -152,7 +137,7 @@ function Stepper({ current }: { current: number }) {
 export function ApplyForm() {
   const [step, setStep] = useState(0);
   const [status, setStatus] = useState<
-    "idle" | "processing" | "sending" | "success" | "error"
+    "idle" | "uploading" | "sending" | "success" | "error"
   >("idle");
   const [serverErrors, setServerErrors] = useState<string[]>([]);
   const {
@@ -196,71 +181,114 @@ export function ApplyForm() {
     if (firstBad >= 0 && firstBad !== step) setStep(firstBad);
   };
 
+  // Read a JSON error body without throwing; return its `errors` array or null.
+  const readErrors = async (res: Response): Promise<string[] | null> => {
+    const text = await res.text().catch(() => "");
+    try {
+      const errs = (JSON.parse(text) as { errors?: unknown }).errors;
+      if (Array.isArray(errs)) return errs as string[];
+    } catch {
+      /* not JSON */
+    }
+    return text ? [`[Debug] HTTP ${res.status} ${res.statusText}: ${text}`] : null;
+  };
+
   const onSubmit = async (data: ApplyFormInput) => {
     setServerErrors([]);
 
-    // ── Prepare files: compress images, cap PDFs, guard total payload ──────
-    // Runs entirely in the browser (this is a client component) before any
-    // network call, so the request stays under Vercel's ~4.5 MB body limit.
-    setStatus("processing");
-    const preparedDocs: { key: string; file: File }[] = [];
+    // Collect the picked files (required + any optional CV).
+    const picked: { docKey: string; file: File }[] = [];
+    for (const doc of APPLY_DOCS) {
+      const file = (data[doc.key] as FileList | undefined)?.[0];
+      if (file) picked.push({ docKey: doc.key, file });
+    }
+
+    const submissionId = crypto.randomUUID();
+
+    // DEBUG INSTRUMENTATION — surface the real failure (thrown exception vs.
+    // non-2xx response) so we can still diagnose Samsung Internet / Android.
     try {
-      for (const doc of APPLY_DOCS) {
-        const raw = (data[doc.key] as FileList | undefined)?.[0];
-        if (!raw) continue;
-        const file = await prepareFile(raw);
-        // A PDF (e.g. CV) cannot be image-compressed; reject if still too big.
-        if (!COMPRESSIBLE_TYPES.includes(file.type) && file.size > PDF_MAX_BYTES) {
+      // ── 1. Ask our API for a signed upload URL per file ──────────────────
+      setStatus("uploading");
+      const urlRes = await fetch("/api/apply/upload-url", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          submissionId,
+          files: picked.map((p) => ({
+            docKey: p.docKey,
+            filename: p.file.name,
+            contentType: p.file.type,
+            size: p.file.size,
+          })),
+        }),
+      });
+      if (!urlRes.ok) {
+        setServerErrors(
+          (await readErrors(urlRes)) ?? [
+            `[Debug] HTTP ${urlRes.status} ${urlRes.statusText}`,
+          ],
+        );
+        setStatus("error");
+        return;
+      }
+      const { uploads } = (await urlRes.json()) as { uploads: SignedUpload[] };
+      const uploadByKey = new Map(uploads.map((u) => [u.docKey, u]));
+
+      // ── 2. Upload each file DIRECTLY to Supabase Storage ─────────────────
+      // Multipart PUT matches how supabase-js posts a Blob to a signed URL.
+      for (const { docKey, file } of picked) {
+        const target = uploadByKey.get(docKey);
+        if (!target) {
+          setServerErrors(["Der Upload konnte nicht vorbereitet werden. Bitte versuchen Sie es erneut."]);
+          setStatus("error");
+          return;
+        }
+        const form = new FormData();
+        form.append("cacheControl", "3600");
+        form.append("", file);
+        const putRes = await fetch(target.signedUrl, {
+          method: "PUT",
+          headers: { "x-upsert": "true" },
+          body: form,
+        });
+        if (!putRes.ok) {
+          const body = await putRes.text().catch(() => "");
+          console.error(
+            `[apply] storage upload failed: HTTP ${putRes.status}`,
+            body,
+          );
           setServerErrors([
-            `„${doc.label}": Die Datei ist zu groß (max. 4 MB). Bitte laden Sie ein kleineres PDF hoch.`,
+            `Eine Datei konnte nicht hochgeladen werden. Bitte versuchen Sie es erneut. [Debug HTTP ${putRes.status}]`,
           ]);
           setStatus("error");
           return;
         }
-        preparedDocs.push({ key: doc.key, file });
       }
-    } catch (err) {
-      console.error("[apply] image compression failed:", err);
-      setServerErrors([
-        "Die Bilder konnten nicht verarbeitet werden. Bitte versuchen Sie es erneut oder laden Sie kleinere Dateien hoch.",
-      ]);
-      setStatus("error");
-      return;
-    }
 
-    const totalBytes = preparedDocs.reduce((sum, d) => sum + d.file.size, 0);
-    if (totalBytes > TOTAL_MAX_BYTES) {
-      setServerErrors([
-        "Die Dateien sind zu groß. Bitte laden Sie kleinere Bilder oder ein kleineres PDF hoch (max. ca. 4 MB gesamt).",
-      ]);
-      setStatus("error");
-      return;
-    }
-
-    // ── Assemble multipart body ────────────────────────────────────────────
-    const fd = new FormData();
-    fd.set("anrede", data.anrede);
-    fd.set("vorname", data.vorname);
-    fd.set("nachname", data.nachname);
-    fd.set("email", data.email);
-    fd.set("phone", data.phone);
-    fd.set("geburtsdatum", data.geburtsdatum);
-    fd.set("versicherungsnummer", data.versicherungsnummer ?? "");
-    fd.set("strasse", data.strasse);
-    fd.set("plz", data.plz);
-    fd.set("ort", data.ort);
-    fd.set("land", data.land);
-    fd.set("berufserfahrung", data.berufserfahrung ?? "");
-    fd.set("consent", String(data.consent));
-    for (const doc of preparedDocs) fd.set(doc.key, doc.file);
-
-    setStatus("sending");
-
-    // DEBUG INSTRUMENTATION — do not swallow errors. We must see the real
-    // failure (thrown exception vs. non-2xx response) to diagnose Samsung
-    // Internet / older Android. Surface the actual message on screen too.
-    try {
-      const res = await fetch("/api/apply", { method: "POST", body: fd });
+      // ── 3. Send the small JSON (fields + submissionId + paths) ───────────
+      setStatus("sending");
+      const res = await fetch("/api/apply", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          anrede: data.anrede,
+          vorname: data.vorname,
+          nachname: data.nachname,
+          email: data.email,
+          phone: data.phone,
+          geburtsdatum: data.geburtsdatum,
+          versicherungsnummer: data.versicherungsnummer ?? "",
+          strasse: data.strasse,
+          plz: data.plz,
+          ort: data.ort,
+          land: data.land,
+          berufserfahrung: data.berufserfahrung ?? "",
+          consent: data.consent,
+          submissionId,
+          uploads: uploads.map((u) => ({ docKey: u.docKey, path: u.path })),
+        }),
+      });
 
       if (res.ok) {
         setStatus("success");
@@ -268,31 +296,17 @@ export function ApplyForm() {
         return;
       }
 
-      // fetch succeeded but the server rejected — capture status + body so a
-      // masked 413/500/502 is distinguishable from a network failure.
-      const text = await res.text().catch(() => "");
-      console.error(
-        `[apply] request failed: HTTP ${res.status} ${res.statusText}`,
-        text,
-      );
-      let parsed: unknown = null;
-      try {
-        parsed = text ? JSON.parse(text) : null;
-      } catch {
-        parsed = null;
-      }
-      const errs = (parsed as { errors?: unknown } | null)?.errors;
+      console.error(`[apply] request failed: HTTP ${res.status} ${res.statusText}`);
       setServerErrors(
-        Array.isArray(errs)
-          ? (errs as string[])
-          : [`[Debug] HTTP ${res.status} ${res.statusText}${text ? `: ${text}` : ""}`],
+        (await readErrors(res)) ?? [
+          `[Debug] HTTP ${res.status} ${res.statusText}`,
+        ],
       );
       setStatus("error");
     } catch (err) {
-      // fetch itself threw — network error, or an exception before/around it.
-      // This is the case that previously showed the generic string with no clue.
+      // A fetch itself threw — network error, or an exception before/around it.
       const message = err instanceof Error ? `${err.name}: ${err.message}` : String(err);
-      console.error("[apply] fetch threw before reaching server:", err);
+      console.error("[apply] submit threw:", err);
       setServerErrors([`[Debug] ${message}`]);
       setStatus("error");
     }
@@ -411,10 +425,10 @@ export function ApplyForm() {
           <Button
             variant="accent"
             type="submit"
-            disabled={status === "processing" || status === "sending"}
+            disabled={status === "uploading" || status === "sending"}
           >
-            {status === "processing"
-              ? "Wird verarbeitet …"
+            {status === "uploading"
+              ? "Wird hochgeladen …"
               : status === "sending"
                 ? "Wird gesendet …"
                 : "Jetzt bewerben"}

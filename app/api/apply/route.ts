@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
-import { applySchema, APPLY_DOCS, DOC_MAX_BYTES, DOC_TYPES } from "@/lib/schemas";
+import { applySchema, APPLY_DOCS } from "@/lib/schemas";
 import { sendMail } from "@/lib/email";
+import { getSupabaseAdmin, SUPABASE_BUCKET } from "@/lib/supabase-server";
 
 function esc(s: string) {
   return s.replace(/[&<>"']/g, (c) => `&#${c.charCodeAt(0)};`);
@@ -13,6 +14,15 @@ const EXT: Record<string, string> = {
   "image/png": "png",
 };
 
+// Resend caps a single email at ~40 MB total. Stay safely under it.
+const MAX_TOTAL_ATTACHMENT_BYTES = 38 * 1024 * 1024;
+
+const DOC_BY_KEY = new Map<string, (typeof APPLY_DOCS)[number]>(
+  APPLY_DOCS.map((d) => [d.key, d]),
+);
+const UUID_RE =
+  /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+
 // "Max Müller-Groß" -> "mueller_gross"-ish safe slug for filenames.
 function slugify(s: string) {
   return (
@@ -24,64 +34,112 @@ function slugify(s: string) {
   );
 }
 
+type Body = {
+  submissionId?: string;
+  uploads?: { docKey?: string; path?: string }[];
+} & Record<string, unknown>;
+
 export async function POST(req: Request) {
-  let fd: FormData;
+  let body: Body;
   try {
-    fd = await req.formData();
+    body = await req.json();
   } catch {
     return NextResponse.json({ ok: false, errors: ["Ungültige Anfrage."] }, { status: 400 });
   }
 
   const parsed = applySchema.safeParse({
-    anrede: fd.get("anrede"),
-    vorname: fd.get("vorname"),
-    nachname: fd.get("nachname"),
-    email: fd.get("email"),
-    phone: fd.get("phone"),
-    geburtsdatum: fd.get("geburtsdatum"),
-    versicherungsnummer: fd.get("versicherungsnummer") ?? "",
-    strasse: fd.get("strasse"),
-    plz: fd.get("plz"),
-    ort: fd.get("ort"),
-    land: fd.get("land"),
-    berufserfahrung: fd.get("berufserfahrung") ?? "",
-    consent: fd.get("consent") === "true",
+    anrede: body.anrede,
+    vorname: body.vorname,
+    nachname: body.nachname,
+    email: body.email,
+    phone: body.phone,
+    geburtsdatum: body.geburtsdatum,
+    versicherungsnummer: body.versicherungsnummer ?? "",
+    strasse: body.strasse,
+    plz: body.plz,
+    ort: body.ort,
+    land: body.land,
+    berufserfahrung: body.berufserfahrung ?? "",
+    consent: body.consent === true,
   });
 
   const errors: string[] = parsed.success
     ? []
     : parsed.error.issues.map((i) => i.message);
 
-  // Validate each document (type + size), collect attachments with clear names.
-  const nachname = parsed.success ? slugify(parsed.data.nachname) : "bewerber";
-  const attachments: { filename: string; content: Buffer }[] = [];
+  const submissionId = body.submissionId;
+  const uploads = Array.isArray(body.uploads) ? body.uploads : [];
 
+  if (!submissionId || !UUID_RE.test(submissionId)) {
+    errors.push("Ungültige Anfrage.");
+  }
+
+  // Every uploaded path must live under this submission's folder — guards
+  // against a client pointing us at another applicant's files.
+  const paths: string[] = [];
+  const seenKeys = new Set<string>();
+  for (const u of uploads) {
+    const doc = u.docKey ? DOC_BY_KEY.get(u.docKey) : undefined;
+    if (!doc || typeof u.path !== "string" || !u.path.startsWith(`${submissionId}/`)) {
+      errors.push("Ungültiges Dokument.");
+      continue;
+    }
+    seenKeys.add(doc.key);
+    paths.push(u.path);
+  }
+
+  // Required documents must each have an uploaded file.
   for (const doc of APPLY_DOCS) {
-    const value = fd.get(doc.key);
-    const file = value instanceof File && value.size > 0 ? value : null;
-    if (!file) {
-      if (doc.required) errors.push(`Bitte laden Sie „${doc.label}" hoch.`);
-      continue;
+    if (doc.required && !seenKeys.has(doc.key)) {
+      errors.push(`Bitte laden Sie „${doc.label}" hoch.`);
     }
-    if (!DOC_TYPES.includes(file.type)) {
-      errors.push(`„${doc.label}": Bitte als PDF, JPG oder PNG hochladen.`);
-      continue;
-    }
-    if (file.size > DOC_MAX_BYTES) {
-      errors.push(`„${doc.label}": Die Datei ist zu groß (max. 10 MB).`);
-      continue;
-    }
-    attachments.push({
-      filename: `${doc.slug}_${nachname}.${EXT[file.type] ?? "bin"}`,
-      content: Buffer.from(await file.arrayBuffer()),
-    });
   }
 
   if (errors.length || !parsed.success) {
     return NextResponse.json({ ok: false, errors }, { status: 400 });
   }
 
-  const d = parsed.data;
+  const d = parsed.data!;
+  const nachname = slugify(d.nachname);
+  const supabase = getSupabaseAdmin();
+
+  // ── Download each file from Storage into a Buffer for the email ──────────
+  const attachments: { filename: string; content: Buffer }[] = [];
+  let totalBytes = 0;
+  try {
+    for (const u of uploads) {
+      const doc = DOC_BY_KEY.get(u.docKey!)!;
+      const { data, error } = await supabase.storage
+        .from(SUPABASE_BUCKET)
+        .download(u.path!);
+      if (error || !data) {
+        console.error("[apply] download failed:", error?.message);
+        return NextResponse.json(
+          { ok: false, errors: ["Die hochgeladenen Dateien konnten nicht gelesen werden. Bitte versuchen Sie es erneut."] },
+          { status: 502 },
+        );
+      }
+      const buffer = Buffer.from(await data.arrayBuffer());
+      totalBytes += buffer.length;
+      if (totalBytes > MAX_TOTAL_ATTACHMENT_BYTES) {
+        return NextResponse.json(
+          { ok: false, errors: ["Die Dateien sind insgesamt zu groß (max. ca. 38 MB). Bitte laden Sie kleinere Dateien hoch."] },
+          { status: 400 },
+        );
+      }
+      attachments.push({
+        filename: `${doc.slug}_${nachname}.${EXT[data.type] ?? "bin"}`,
+        content: buffer,
+      });
+    }
+  } catch (err) {
+    console.error("[apply] storage download threw:", err);
+    return NextResponse.json(
+      { ok: false, errors: ["Die hochgeladenen Dateien konnten nicht gelesen werden. Bitte versuchen Sie es erneut."] },
+      { status: 502 },
+    );
+  }
+
   const row = (label: string, value: string) =>
     `<p><b>${label}:</b> ${esc(value || "–")}</p>`;
 
@@ -104,10 +162,23 @@ export async function POST(req: Request) {
       attachments,
     });
   } catch {
+    // Email failed — do NOT delete the files, so nothing is lost and a retry
+    // can still reach them.
     return NextResponse.json(
       { ok: false, errors: ["Senden fehlgeschlagen. Bitte versuchen Sie es später erneut."] },
       { status: 502 },
     );
   }
+
+  // ── Email sent: delete the temporary files (DSGVO — not kept) ────────────
+  if (paths.length) {
+    const { error } = await supabase.storage.from(SUPABASE_BUCKET).remove(paths);
+    if (error) {
+      // The applicant's mail is already out; a cleanup failure must not turn
+      // a successful submission into an error. Log for manual pruning.
+      console.error("[apply] cleanup remove failed:", error.message, paths);
+    }
+  }
+
   return NextResponse.json({ ok: true });
 }
