@@ -101,8 +101,13 @@ export async function POST(req: Request) {
       );
     }
     const path = `${submissionId}/${f.docKey}-${sanitized}`;
-    // TEMP DIAGNOSTIC: raw incoming name vs. final path (no file contents).
-    console.log("[apply:upload-url] path:", { raw: f.filename, path });
+    // TEMP DIAGNOSTIC: raw submissionId + name vs. final path (no file bytes).
+    console.log("[apply:upload-url] received:", {
+      submissionId,
+      docKey: f.docKey,
+      rawName: f.filename,
+      finalPath: path,
+    });
     const { data, error } = await supabase.storage
       .from(SUPABASE_BUCKET)
       .createSignedUploadUrl(path);

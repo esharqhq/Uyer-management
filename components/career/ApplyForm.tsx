@@ -35,6 +35,41 @@ type SignedUpload = {
   token: string;
 };
 
+// Generate a v4-shaped UUID that works on older Samsung Internet / Android
+// WebView, where crypto.randomUUID() is undefined. Guarantees a non-empty,
+// path-safe hex string so the storage path never becomes "undefined/…".
+function safeUuid(): string {
+  const c = typeof crypto !== "undefined" ? crypto : undefined;
+  if (c?.randomUUID) {
+    try {
+      return c.randomUUID();
+    } catch {
+      /* fall through */
+    }
+  }
+  // Fill 16 bytes from a CSPRNG when available, else Math.random.
+  const bytes = new Uint8Array(16);
+  if (c?.getRandomValues) {
+    c.getRandomValues(bytes);
+  } else {
+    for (let i = 0; i < 16; i++) bytes[i] = Math.floor(Math.random() * 256);
+  }
+  bytes[6] = (bytes[6] & 0x0f) | 0x40; // version 4
+  bytes[8] = (bytes[8] & 0x3f) | 0x80; // variant 10xx
+  const hex = Array.from(bytes, (b) => b.toString(16).padStart(2, "0"));
+  return (
+    hex.slice(0, 4).join("") +
+    "-" +
+    hex.slice(4, 6).join("") +
+    "-" +
+    hex.slice(6, 8).join("") +
+    "-" +
+    hex.slice(8, 10).join("") +
+    "-" +
+    hex.slice(10, 16).join("")
+  );
+}
+
 const docFile = (required: boolean, subject: string) =>
   z
     .custom<FileList>()
@@ -203,7 +238,15 @@ export function ApplyForm() {
       if (file) picked.push({ docKey: doc.key, file });
     }
 
-    const submissionId = crypto.randomUUID();
+    const submissionId = safeUuid();
+    // Never send a malformed path: bail before any network call if empty.
+    if (!submissionId) {
+      setServerErrors([
+        "Ihre Bewerbung konnte nicht vorbereitet werden. Bitte aktualisieren Sie die Seite und versuchen Sie es erneut.",
+      ]);
+      setStatus("error");
+      return;
+    }
 
     // DEBUG INSTRUMENTATION — surface the real failure (thrown exception vs.
     // non-2xx response) so we can still diagnose Samsung Internet / Android.
