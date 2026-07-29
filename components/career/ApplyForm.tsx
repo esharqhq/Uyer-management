@@ -70,28 +70,24 @@ function safeUuid(): string {
   );
 }
 
-const docFile = (required: boolean, subject: string) =>
-  z
-    .custom<FileList>()
-    .refine(
-      (fl) => !required || (fl && fl.length === 1),
-      `Bitte laden Sie ${subject} hoch.`,
-    )
-    .refine(
-      (fl) => !fl?.[0] || fl[0].size <= DOC_MAX_BYTES,
-      "Die Datei ist zu groß (max. 10 MB).",
-    )
-    .refine(
-      (fl) => !fl?.[0] || DOC_TYPES.includes(fl[0].type),
-      "Bitte laden Sie die Datei als PDF, JPG oder PNG hoch.",
-    );
+// No document is mandatory — only size and type are checked, and only once a
+// file has actually been picked.
+const docFile = z
+  .custom<FileList>()
+  .refine(
+    (fl) => !fl?.[0] || fl[0].size <= DOC_MAX_BYTES,
+    "Die Datei ist zu groß (max. 10 MB).",
+  )
+  .refine(
+    (fl) => !fl?.[0] || DOC_TYPES.includes(fl[0].type),
+    "Bitte laden Sie die Datei als PDF, JPG oder PNG hoch.",
+  );
 
 const applyFormSchema = applySchema.extend({
-  ausweis: docFile(true, "Ihren Ausweis / Reisepass"),
-  meldezettel: docFile(true, "Ihren Meldezettel"),
-  ecardVorne: docFile(true, "die Vorderseite Ihrer E-Card"),
-  ecardHinten: docFile(true, "die Rückseite Ihrer E-Card"),
-  lebenslauf: docFile(false, "Ihren Lebenslauf"),
+  ausweis: docFile,
+  meldezettel: docFile,
+  ecard: docFile,
+  lebenslauf: docFile,
 });
 type ApplyFormInput = z.infer<typeof applyFormSchema>;
 type FieldName = keyof ApplyFormInput;
@@ -231,7 +227,7 @@ export function ApplyForm() {
   const onSubmit = async (data: ApplyFormInput) => {
     setServerErrors([]);
 
-    // Collect the picked files (required + any optional CV).
+    // Collect whichever of the optional documents the applicant attached.
     const picked: { docKey: string; file: File }[] = [];
     for (const doc of APPLY_DOCS) {
       const file = (data[doc.key] as FileList | undefined)?.[0];
@@ -251,61 +247,67 @@ export function ApplyForm() {
     // DEBUG INSTRUMENTATION — surface the real failure (thrown exception vs.
     // non-2xx response) so we can still diagnose Samsung Internet / Android.
     try {
-      // ── 1. Ask our API for a signed upload URL per file ──────────────────
-      setStatus("uploading");
-      const urlRes = await fetch("/api/apply/upload-url", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          submissionId,
-          files: picked.map((p) => ({
-            docKey: p.docKey,
-            filename: p.file.name,
-            contentType: p.file.type,
-            size: p.file.size,
-          })),
-        }),
-      });
-      if (!urlRes.ok) {
-        setServerErrors(
-          (await readErrors(urlRes)) ?? [
-            `[Debug] HTTP ${urlRes.status} ${urlRes.statusText}`,
-          ],
-        );
-        setStatus("error");
-        return;
-      }
-      const { uploads } = (await urlRes.json()) as { uploads: SignedUpload[] };
-      const uploadByKey = new Map(uploads.map((u) => [u.docKey, u]));
+      // Since every document is optional, an application may carry no files
+      // at all — then there is nothing to sign and nothing to upload.
+      let uploads: SignedUpload[] = [];
 
-      // ── 2. Upload each file DIRECTLY to Supabase Storage ─────────────────
-      // Multipart PUT matches how supabase-js posts a Blob to a signed URL.
-      for (const { docKey, file } of picked) {
-        const target = uploadByKey.get(docKey);
-        if (!target) {
-          setServerErrors(["Der Upload konnte nicht vorbereitet werden. Bitte versuchen Sie es erneut."]);
+      if (picked.length > 0) {
+        // ── 1. Ask our API for a signed upload URL per file ────────────────
+        setStatus("uploading");
+        const urlRes = await fetch("/api/apply/upload-url", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            submissionId,
+            files: picked.map((p) => ({
+              docKey: p.docKey,
+              filename: p.file.name,
+              contentType: p.file.type,
+              size: p.file.size,
+            })),
+          }),
+        });
+        if (!urlRes.ok) {
+          setServerErrors(
+            (await readErrors(urlRes)) ?? [
+              `[Debug] HTTP ${urlRes.status} ${urlRes.statusText}`,
+            ],
+          );
           setStatus("error");
           return;
         }
-        const form = new FormData();
-        form.append("cacheControl", "3600");
-        form.append("", file);
-        const putRes = await fetch(target.signedUrl, {
-          method: "PUT",
-          headers: { "x-upsert": "true" },
-          body: form,
-        });
-        if (!putRes.ok) {
-          const body = await putRes.text().catch(() => "");
-          console.error(
-            `[apply] storage upload failed: HTTP ${putRes.status}`,
-            body,
-          );
-          setServerErrors([
-            `Eine Datei konnte nicht hochgeladen werden. Bitte versuchen Sie es erneut. [Debug HTTP ${putRes.status}]`,
-          ]);
-          setStatus("error");
-          return;
+        ({ uploads } = (await urlRes.json()) as { uploads: SignedUpload[] });
+        const uploadByKey = new Map(uploads.map((u) => [u.docKey, u]));
+
+        // ── 2. Upload each file DIRECTLY to Supabase Storage ───────────────
+        // Multipart PUT matches how supabase-js posts a Blob to a signed URL.
+        for (const { docKey, file } of picked) {
+          const target = uploadByKey.get(docKey);
+          if (!target) {
+            setServerErrors(["Der Upload konnte nicht vorbereitet werden. Bitte versuchen Sie es erneut."]);
+            setStatus("error");
+            return;
+          }
+          const form = new FormData();
+          form.append("cacheControl", "3600");
+          form.append("", file);
+          const putRes = await fetch(target.signedUrl, {
+            method: "PUT",
+            headers: { "x-upsert": "true" },
+            body: form,
+          });
+          if (!putRes.ok) {
+            const body = await putRes.text().catch(() => "");
+            console.error(
+              `[apply] storage upload failed: HTTP ${putRes.status}`,
+              body,
+            );
+            setServerErrors([
+              `Eine Datei konnte nicht hochgeladen werden. Bitte versuchen Sie es erneut. [Debug HTTP ${putRes.status}]`,
+            ]);
+            setStatus("error");
+            return;
+          }
         }
       }
 
@@ -414,14 +416,14 @@ export function ApplyForm() {
         <div key="step-2" className="animate-step mt-6">
           <h3 className="font-display text-lg font-semibold">Dokumente</h3>
           <p className="mt-1 font-body text-sm text-muted">
-            Bitte laden Sie die folgenden Unterlagen hoch. {DOC_HINT}.
+            Alle Unterlagen sind optional – Sie können sie auch später
+            nachreichen. {DOC_HINT}.
           </p>
           <div className="mt-4 grid gap-5 sm:grid-cols-2">
             {APPLY_DOCS.map((doc) => (
               <FileUpload
                 key={doc.key}
                 label={doc.label}
-                required={doc.required}
                 hint={DOC_HINT}
                 accept={DOC_ACCEPT}
                 fileName={(watch(doc.key) as FileList | undefined)?.[0]?.name ?? null}

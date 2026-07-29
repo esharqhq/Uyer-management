@@ -67,7 +67,7 @@ const validRequest = {
   telefon: "+43 660 1234567",
   position: "Reinigungskraft",
   anzahl: 5,
-  einsatzort: "Wien",
+  einsatzort: "Austria",
   startdatum: "",
   anmerkungen: "",
   consent: true,

@@ -26,13 +26,11 @@ beforeEach(() => {
   remove.mockClear();
 });
 
-function jsonReq(
-  overrides: Record<string, unknown> = {},
-  opts: { skipDoc?: string } = {},
-) {
-  const uploads = APPLY_DOCS.filter((d) => d.required && d.key !== opts.skipDoc).map(
-    (d) => ({ docKey: d.key, path: `${SUBMISSION_ID}/${d.key}-${d.slug}.pdf` }),
-  );
+function jsonReq(overrides: Record<string, unknown> = {}) {
+  const uploads = APPLY_DOCS.map((d) => ({
+    docKey: d.key,
+    path: `${SUBMISSION_ID}/${d.key}-${d.slug}.pdf`,
+  }));
   const body = {
     anrede: "Herr",
     vorname: "Max",
@@ -67,12 +65,13 @@ describe("POST /api/apply", () => {
     expect(remove).toHaveBeenCalledOnce();
   });
 
-  it("rejects a missing required document (E-Card Vorderseite)", async () => {
+  // All documents are optional — a bewerbung without any file must go through.
+  it("accepts an application with no documents at all", async () => {
     const { POST } = await import("@/app/api/apply/route");
-    const res = await POST(jsonReq({}, { skipDoc: "ecardVorne" }));
-    expect(res.status).toBe(400);
-    const body = await res.json();
-    expect(JSON.stringify(body.errors)).toContain("E-Card Vorderseite");
+    const res = await POST(jsonReq({ uploads: [] }));
+    expect(res.status).toBe(200);
+    expect(download).not.toHaveBeenCalled();
+    // Nothing was stored, so there is nothing to clean up.
     expect(remove).not.toHaveBeenCalled();
   });
 
@@ -80,7 +79,7 @@ describe("POST /api/apply", () => {
     const { POST } = await import("@/app/api/apply/route");
     const res = await POST(
       jsonReq({
-        uploads: APPLY_DOCS.filter((d) => d.required).map((d) => ({
+        uploads: APPLY_DOCS.map((d) => ({
           docKey: d.key,
           path: `someone-else/${d.key}.pdf`,
         })),

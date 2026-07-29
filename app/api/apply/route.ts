@@ -75,24 +75,16 @@ export async function POST(req: Request) {
   }
 
   // Every uploaded path must live under this submission's folder — guards
-  // against a client pointing us at another applicant's files.
+  // against a client pointing us at another applicant's files. All documents
+  // are optional, so an empty list is a valid application.
   const paths: string[] = [];
-  const seenKeys = new Set<string>();
   for (const u of uploads) {
     const doc = u.docKey ? DOC_BY_KEY.get(u.docKey) : undefined;
     if (!doc || typeof u.path !== "string" || !u.path.startsWith(`${submissionId}/`)) {
       errors.push("Ungültiges Dokument.");
       continue;
     }
-    seenKeys.add(doc.key);
     paths.push(u.path);
-  }
-
-  // Required documents must each have an uploaded file.
-  for (const doc of APPLY_DOCS) {
-    if (doc.required && !seenKeys.has(doc.key)) {
-      errors.push(`Bitte laden Sie „${doc.label}" hoch.`);
-    }
   }
 
   if (errors.length || !parsed.success) {

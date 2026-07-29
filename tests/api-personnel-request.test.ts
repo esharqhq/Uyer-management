@@ -21,7 +21,7 @@ const valid = {
   telefon: "+43 660 1234567",
   position: "Reinigungskraft",
   anzahl: 5,
-  einsatzort: "Wien",
+  einsatzort: "Austria",
   startdatum: "",
   anmerkungen: "Zwei Objekte im Zentrum.",
   consent: true,

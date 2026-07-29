@@ -75,35 +75,26 @@ export const personnelRequestSchema = z.object({
 export type PersonnelRequestInput = z.infer<typeof personnelRequestSchema>;
 
 // German labels for the document uploads — reused by the form and the email.
+// Every document is optional: applicants may hand anything missing in later.
 export const APPLY_DOCS = [
   {
     key: "ausweis",
     label: "Ausweis / Reisepass",
-    required: true,
     slug: "ausweis",
   },
   {
     key: "meldezettel",
     label: "Meldezettel",
-    required: true,
     slug: "meldezettel",
   },
   {
-    key: "ecardVorne",
-    label: "E-Card Vorderseite",
-    required: true,
-    slug: "ecard_vorne",
-  },
-  {
-    key: "ecardHinten",
-    label: "E-Card Rückseite",
-    required: true,
-    slug: "ecard_hinten",
+    key: "ecard",
+    label: "E-Card",
+    slug: "ecard",
   },
   {
     key: "lebenslauf",
     label: "Lebenslauf / CV",
-    required: false,
     slug: "lebenslauf",
   },
 ] as const;
