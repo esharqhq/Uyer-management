@@ -118,8 +118,24 @@ export async function POST(req: Request) {
       .createSignedUploadUrl(path);
     if (error || !data) {
       console.error("[apply] createSignedUploadUrl failed:", error?.message);
+      // TEMP DIAGNOSTIC: surface Supabase's own message + the project host to
+      // the client, so the failing knob (dead project / wrong bucket / bad key)
+      // is visible in the browser's Network → Response tab without Vercel logs.
+      const host = (() => {
+        try {
+          return new URL(process.env.SUPABASE_URL!.trim()).host;
+        } catch {
+          return "unparseable-SUPABASE_URL";
+        }
+      })();
       return NextResponse.json(
-        { ok: false, errors: ["Der Upload konnte nicht vorbereitet werden. Bitte versuchen Sie es erneut."] },
+        {
+          ok: false,
+          errors: [
+            "Der Upload konnte nicht vorbereitet werden. Bitte versuchen Sie es erneut.",
+            `[Debug] supabase=${host} bucket=${SUPABASE_BUCKET} error=${error?.message ?? "no data returned"}`,
+          ],
+        },
         { status: 502 },
       );
     }
