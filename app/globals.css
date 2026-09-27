@@ -86,7 +86,15 @@ body {
 
 /* ── Coverage map (Leaflet) — brand-styled pins & controls ──────────── */
 
-/* Gold brand pin: soft pulse ring + solid dot + dark label (light tiles) */
+/* Turn the free OSM tiles into a dark warm gray matching paper/surface.
+   invert makes them dark, grayscale drops all hues, a little sepia warms
+   the gray. Filter the tile pane only — markers and controls live in
+   sibling panes and stay untouched. */
+.leaflet-tile-pane {
+  filter: invert(1) grayscale(1) sepia(0.3) brightness(1.1) contrast(0.85);
+}
+
+/* Gold brand pin: soft pulse ring + solid dot + light label (dark tiles) */
 .uyer-pin {
   position: relative;
   display: block;
@@ -119,12 +127,12 @@ body {
   font-weight: 600;
   font-size: 13px;
   line-height: 1;
-  color: var(--color-ink);
+  color: var(--color-text);
   white-space: nowrap;
   text-shadow:
-    0 0 3px rgba(255, 255, 255, 0.9),
-    0 0 3px rgba(255, 255, 255, 0.9),
-    0 1px 2px rgba(255, 255, 255, 0.9);
+    0 0 3px rgba(18, 17, 14, 0.9),
+    0 0 3px rgba(18, 17, 14, 0.9),
+    0 1px 2px rgba(18, 17, 14, 0.9);
 }
 
 /* Leaflet zoom control → light map tiles (dark text on white) */

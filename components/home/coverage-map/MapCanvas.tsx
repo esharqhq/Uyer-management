@@ -45,7 +45,7 @@ export default function MapCanvas() {
       fadeAnimation={!prefersReducedMotion}
       markerZoomAnimation={!prefersReducedMotion}
       className="h-full w-full"
-      style={{ background: "#e9e7e2" }}
+      style={{ background: "var(--color-ink)" }}
     >
       <TileLayer
         url="https://tile.openstreetmap.org/{z}/{x}/{y}.png"
